@@ -41,7 +41,7 @@ func main() {
 		authEndpoints.AddAuthRoutes(publicGroup, authJWT)
 	}
 	privateGroup := router.Group("")
-	privateGroup.Use(authJWT.MiddlewareFunc())
+	//privateGroup.Use(authJWT.MiddlewareFunc())
 	{
 		apiEndpointGroup.AddApiRoutes(privateGroup)
 	}
