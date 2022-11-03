@@ -4,9 +4,9 @@ import (
 	"AnimeLifeBackEnd/entity"
 	"AnimeLifeBackEnd/entity/request"
 	"AnimeLifeBackEnd/global"
-	"database/sql"
 	jwt "github.com/appleboy/gin-jwt/v2"
 	"github.com/gin-gonic/gin"
+	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 	"time"
 )
@@ -24,7 +24,6 @@ func InitJWTAuth() *jwt.GinJWTMiddleware {
 				return jwt.MapClaims{
 					jwt.IdentityKey: v.ID,
 					"username":      v.Username,
-					"student_name":  v.StudentNumber,
 					"email":         v.Email,
 				}
 			}
@@ -38,18 +37,19 @@ func InitJWTAuth() *jwt.GinJWTMiddleware {
 			userName := login.Username
 			password := login.Password
 
-			if userName == "admin" && password == "123" {
-				user := entity.User{
-					Model:         gorm.Model{ID: 123},
-					Username:      "admin",
-					Password:      "123",
-					Email:         "email@email.com",
-					StudentNumber: sql.NullString{String: "123"},
-				}
-				return &user, nil
+			user := entity.User{
+				Model: gorm.Model{},
+			}
+			result := global.MysqlDB.Where("username = ?", userName).First(&user)
+			if result.Error != nil {
+				return nil, jwt.ErrFailedAuthentication
+			}
+			err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password))
+			if err != nil {
+				return nil, jwt.ErrFailedAuthentication
 			}
 
-			return nil, jwt.ErrFailedAuthentication
+			return &user, nil
 		},
 		Unauthorized: func(c *gin.Context, code int, message string) {
 			c.JSON(code, gin.H{

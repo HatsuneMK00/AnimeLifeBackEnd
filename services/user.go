@@ -3,6 +3,7 @@ package services
 import (
 	"AnimeLifeBackEnd/entity"
 	"AnimeLifeBackEnd/global"
+	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 )
 
@@ -15,6 +16,14 @@ type UserService interface {
 type userService struct{}
 
 func (s userService) AddUser(user *entity.User) (*entity.User, int64) {
+	// encrypt password with bcrypt
+	hashedPwd, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
+	if err != nil {
+		global.Logger.Errorf("%v", err)
+		return user, 0
+	}
+	user.Password = string(hashedPwd)
+
 	result := global.MysqlDB.Create(user)
 	if result.Error != nil {
 		global.Logger.Errorf("%v", result.Error)

@@ -75,8 +75,7 @@ func (api userApi) AddUser(c *gin.Context) {
 	if rowAffected > 0 {
 		c.JSON(http.StatusOK, response.Response{
 			Code:    http.StatusOK,
-			Message: "",
-			Data:    result,
+			Message: "Add user success",
 		})
 		global.Logger.Infof("add user: %v", result.Username)
 	} else {
