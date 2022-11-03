@@ -1,9 +1,9 @@
 package apis
 
 import (
-	"WebAppStructure/entity"
-	"WebAppStructure/entity/response"
-	"WebAppStructure/global"
+	"AnimeLifeBackEnd/entity"
+	"AnimeLifeBackEnd/entity/response"
+	"AnimeLifeBackEnd/global"
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"strconv"

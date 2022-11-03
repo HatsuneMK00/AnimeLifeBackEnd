@@ -1,8 +1,8 @@
 package repository
 
 import (
-	"WebAppStructure/entity"
-	"WebAppStructure/global"
+	"AnimeLifeBackEnd/entity"
+	"AnimeLifeBackEnd/global"
 	"gorm.io/gorm"
 )
 

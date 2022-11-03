@@ -1,6 +1,6 @@
 package apis
 
-import "WebAppStructure/services"
+import "AnimeLifeBackEnd/services"
 
 type ApiGroup struct {
 	Login LoginApi

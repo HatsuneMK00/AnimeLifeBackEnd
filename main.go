@@ -1,11 +1,11 @@
 package main
 
 import (
-	"WebAppStructure/core"
-	"WebAppStructure/env"
-	"WebAppStructure/global"
-	"WebAppStructure/middlewares"
-	"WebAppStructure/routes"
+	"AnimeLifeBackEnd/core"
+	"AnimeLifeBackEnd/env"
+	"AnimeLifeBackEnd/global"
+	"AnimeLifeBackEnd/middlewares"
+	"AnimeLifeBackEnd/routes"
 	"github.com/gin-gonic/gin"
 )
 

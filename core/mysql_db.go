@@ -1,8 +1,8 @@
 package core
 
 import (
-	"WebAppStructure/entity"
-	"WebAppStructure/global"
+	"AnimeLifeBackEnd/entity"
+	"AnimeLifeBackEnd/global"
 	"fmt"
 	"go.uber.org/zap"
 	"gorm.io/driver/mysql"

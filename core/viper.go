@@ -1,7 +1,7 @@
 package core
 
 import (
-	"WebAppStructure/global"
+	"AnimeLifeBackEnd/global"
 	"flag"
 	"fmt"
 	"github.com/fsnotify/fsnotify"

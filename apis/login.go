@@ -1,7 +1,7 @@
 package apis
 
 import (
-	"WebAppStructure/entity"
+	"AnimeLifeBackEnd/entity"
 )
 
 type LoginApi interface {

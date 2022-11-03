@@ -1,7 +1,7 @@
 package api
 
 import (
-	"WebAppStructure/apis"
+	"AnimeLifeBackEnd/apis"
 	"github.com/gin-gonic/gin"
 )
 

@@ -1,4 +1,4 @@
-module WebAppStructure
+module AnimeLifeBackEnd
 
 go 1.18
 

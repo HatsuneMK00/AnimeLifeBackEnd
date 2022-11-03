@@ -1,7 +1,7 @@
 package routes
 
 import (
-	"WebAppStructure/routes/api"
+	"AnimeLifeBackEnd/routes/api"
 )
 
 type routerGroup struct {
