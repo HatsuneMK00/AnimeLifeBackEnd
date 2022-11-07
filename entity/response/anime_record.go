@@ -15,3 +15,11 @@ type AnimeRecord struct {
 	Comment   string    `json:"comment"`
 	RecordAt  time.Time `json:"record_at"`
 }
+
+type AnimeRecordSummary struct {
+	TotalCount       int `json:"total_count"`
+	RatingOneCount   int `json:"rating_one_count"`
+	RatingTwoCount   int `json:"rating_two_count"`
+	RatingThreeCount int `json:"rating_three_count"`
+	RatingFourCount  int `json:"rating_four_count"`
+}

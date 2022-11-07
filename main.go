@@ -6,6 +6,7 @@ import (
 	"AnimeLifeBackEnd/global"
 	"AnimeLifeBackEnd/middlewares"
 	"AnimeLifeBackEnd/routes"
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
 
@@ -23,6 +24,7 @@ func main() {
 	} else {
 		router.Use(gin.Logger())
 		router.Use(gin.Recovery())
+		router.Use(cors.Default())
 	}
 	global.MysqlDB = core.InitMysqlDB()
 	if global.MysqlDB != nil {

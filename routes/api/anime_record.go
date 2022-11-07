@@ -11,5 +11,7 @@ func (r animeRecordRouter) AddAnimeRecordRoutes(rg *gin.RouterGroup) {
 	animeRecord := rg.Group("/anime_record")
 	{
 		animeRecord.GET("/:userId", apis.ApiGroupApp.AnimeRecordApi.FetchAnimeRecords)
+		animeRecord.GET("/:userId/rating/:rating", apis.ApiGroupApp.AnimeRecordApi.FetchAnimeRecordsOfRating)
+		animeRecord.GET("/:userId/summary", apis.ApiGroupApp.AnimeRecordApi.FetchAnimeRecordSummary)
 	}
 }
