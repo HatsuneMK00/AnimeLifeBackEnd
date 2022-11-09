@@ -5,6 +5,7 @@ import (
 	"AnimeLifeBackEnd/entity/request"
 	"AnimeLifeBackEnd/global"
 	"github.com/gin-gonic/gin"
+	"net/url"
 	"strconv"
 )
 
@@ -14,6 +15,7 @@ type AnimeRecordApi interface {
 	FetchAnimeRecordSummary(c *gin.Context)
 	AddAnimeRecord(c *gin.Context)
 	UpdateAnimeRecord(c *gin.Context)
+	SearchAnimeRecords(c *gin.Context)
 }
 
 type animeRecordApi struct{}
@@ -207,5 +209,41 @@ func (a animeRecordApi) UpdateAnimeRecord(c *gin.Context) {
 			"shouldAnimeUpdate":   shouldAnimeUpdate,
 			"isAnimeUpdateFailed": isAnimeUpdateFailed,
 		},
+	})
+}
+
+func (a animeRecordApi) SearchAnimeRecords(c *gin.Context) {
+	// return 15 records from offset at a time
+	userId, err := strconv.Atoi(c.Param("userId"))
+	if err != nil {
+		c.JSON(400, gin.H{
+			"message": "user id needs to be uint",
+		})
+		return
+	}
+	offset, err := strconv.Atoi(c.DefaultQuery("offset", "0"))
+	if err != nil {
+		c.JSON(400, gin.H{
+			"message": "offset needs to be uint",
+		})
+		return
+	}
+	searchText, err := url.QueryUnescape(c.DefaultQuery("searchText", ""))
+	if err != nil {
+		c.JSON(400, gin.H{
+			"message": "searchText needs to be url encoded",
+		})
+		return
+	}
+	animeRecords, err := animeRecordService.SearchAnimeRecords(userId, offset, 15, searchText)
+	if err != nil {
+		c.JSON(500, gin.H{
+			"message": "db error",
+		})
+		return
+	}
+	c.JSON(200, gin.H{
+		"message": "success",
+		"data":    animeRecords,
 	})
 }

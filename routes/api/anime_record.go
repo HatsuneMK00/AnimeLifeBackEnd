@@ -15,5 +15,6 @@ func (r animeRecordRouter) AddAnimeRecordRoutes(rg *gin.RouterGroup) {
 		animeRecord.GET("/:userId/summary", apis.ApiGroupApp.AnimeRecordApi.FetchAnimeRecordSummary)
 		animeRecord.POST("/:userId/addRecord", apis.ApiGroupApp.AnimeRecordApi.AddAnimeRecord)
 		animeRecord.POST("/:userId/updateRecord", apis.ApiGroupApp.AnimeRecordApi.UpdateAnimeRecord)
+		animeRecord.GET("/:userId/search", apis.ApiGroupApp.AnimeRecordApi.SearchAnimeRecords)
 	}
 }

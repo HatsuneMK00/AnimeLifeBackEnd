@@ -21,6 +21,7 @@ type AnimeRecordService interface {
 	AddNewAnimeRecord(animeId, userId, rating int) (entity.UserAnime, error)
 	UpdateAnimeByBangumiId(bangumiId int, anime entity.Anime) (entity.Anime, error)
 	UpdateAnimeRecord(animeId, userId, rating int) (entity.UserAnime, error)
+	SearchAnimeRecords(userId, offset, limit int, keyword string) ([]response.AnimeRecord, error)
 }
 
 type animeRecordService struct{}
@@ -221,4 +222,27 @@ func (s animeRecordService) UpdateAnimeRecord(animeId, userId, rating int) (enti
 		global.Logger.Errorf("Fail to update rating column of anime record. Err: %v", err)
 	}
 	return userAnime, err
+}
+
+func (s animeRecordService) SearchAnimeRecords(userId, offset, limit int, keyword string) ([]response.AnimeRecord, error) {
+	user := entity.User{
+		Model: gorm.Model{},
+	}
+	user.ID = uint(userId)
+	animeRecords := make([]response.AnimeRecord, 0)
+
+	err := global.MysqlDB.Table("animes").
+		Joins("JOIN user_animes ON user_animes.anime_id = animes.id").
+		Where("user_animes.user_id = ?", userId).
+		Where("animes.name LIKE ?", "%"+keyword+"%").
+		Or("animes.name_jp LIKE ?", "%"+keyword+"%").
+		Select("animes.*, user_animes.rating AS rating, user_animes.created_at AS record_at").
+		Offset(offset).
+		Limit(limit).
+		Order("record_at DESC").
+		Find(&animeRecords).Error
+	if err != nil {
+		global.Logger.Errorf("%v", err)
+	}
+	return animeRecords, err
 }
