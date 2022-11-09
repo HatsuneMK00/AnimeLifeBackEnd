@@ -1,6 +1,7 @@
 package apis
 
 import (
+	"AnimeLifeBackEnd/entity"
 	"AnimeLifeBackEnd/entity/request"
 	"AnimeLifeBackEnd/global"
 	"github.com/gin-gonic/gin"
@@ -12,6 +13,7 @@ type AnimeRecordApi interface {
 	FetchAnimeRecordsOfRating(c *gin.Context)
 	FetchAnimeRecordSummary(c *gin.Context)
 	AddAnimeRecord(c *gin.Context)
+	UpdateAnimeRecord(c *gin.Context)
 }
 
 type animeRecordApi struct{}
@@ -151,6 +153,59 @@ func (a animeRecordApi) AddAnimeRecord(c *gin.Context) {
 		"data": map[string]interface{}{
 			"anime":  anime,
 			"record": animeRecord,
+		},
+	})
+}
+
+func (a animeRecordApi) UpdateAnimeRecord(c *gin.Context) {
+	userId, err := strconv.Atoi(c.Param("userId"))
+	if err != nil {
+		c.JSON(400, gin.H{
+			"message": "user id needs to be uint",
+		})
+		return
+	}
+	updateRequest := request.AnimeRecordUpdateRequest{}
+	err = c.ShouldBindJSON(&updateRequest)
+	if err != nil {
+		c.JSON(400, gin.H{
+			"message": "invalid request body",
+		})
+		return
+	}
+
+	// update anime info if bangumiId is changed
+	anime, err := animeRecordService.FetchAnimeById(updateRequest.AnimeId)
+	if err != nil {
+		c.JSON(500, gin.H{
+			"message": "fail to fetch anime",
+		})
+		return
+	}
+	shouldAnimeUpdate := false
+	isAnimeUpdateFailed := false
+	var updatedAnime entity.Anime
+	if anime.BangumiId != updateRequest.BangumiId {
+		shouldAnimeUpdate = true
+		updatedAnime, err = animeRecordService.UpdateAnimeByBangumiId(updateRequest.BangumiId, anime)
+		if err != nil {
+			isAnimeUpdateFailed = true
+		}
+	}
+	record, err := animeRecordService.UpdateAnimeRecord(updateRequest.AnimeId, userId, updateRequest.AnimeRating)
+	if err != nil {
+		c.JSON(500, gin.H{
+			"message": "fail to update anime record",
+		})
+		return
+	}
+	c.JSON(200, gin.H{
+		"message": "success",
+		"data": map[string]interface{}{
+			"record":              record,
+			"updatedAnime":        updatedAnime,
+			"shouldAnimeUpdate":   shouldAnimeUpdate,
+			"isAnimeUpdateFailed": isAnimeUpdateFailed,
 		},
 	})
 }
