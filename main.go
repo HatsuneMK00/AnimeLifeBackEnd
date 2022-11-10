@@ -6,7 +6,6 @@ import (
 	"AnimeLifeBackEnd/global"
 	"AnimeLifeBackEnd/middlewares"
 	"AnimeLifeBackEnd/routes"
-	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
 
@@ -24,7 +23,7 @@ func main() {
 	} else {
 		router.Use(gin.Logger())
 		router.Use(gin.Recovery())
-		router.Use(cors.Default())
+		router.Use(middlewares.NewCors())
 	}
 	global.MysqlDB = core.InitMysqlDB()
 	if global.MysqlDB != nil {
@@ -43,7 +42,7 @@ func main() {
 		authEndpoints.AddAuthRoutes(publicGroup, authJWT)
 	}
 	privateGroup := router.Group("")
-	//privateGroup.Use(authJWT.MiddlewareFunc())
+	privateGroup.Use(authJWT.MiddlewareFunc())
 	{
 		apiEndpointGroup.AddApiRoutes(privateGroup)
 	}
