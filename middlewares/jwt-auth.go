@@ -13,10 +13,10 @@ import (
 
 func InitJWTAuth() *jwt.GinJWTMiddleware {
 	middleware, err := jwt.New(&jwt.GinJWTMiddleware{
-		Realm:       "GoApp",
-		Key:         []byte("this is a secret key"),
-		Timeout:     time.Hour,
-		MaxRefresh:  time.Hour,
+		Realm:       "AnimeLife",
+		Key:         []byte("The secret makes a project project"),
+		Timeout:     12 * time.Hour,
+		MaxRefresh:  4 * time.Hour,
 		IdentityKey: "id",
 		SendCookie:  false,
 		PayloadFunc: func(data interface{}) jwt.MapClaims {

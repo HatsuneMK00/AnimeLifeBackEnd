@@ -5,6 +5,7 @@ import "AnimeLifeBackEnd/services"
 type ApiGroup struct {
 	User           UserApi
 	AnimeRecordApi AnimeRecordApi
+	AuthCheckApi   AuthCheckApi
 }
 
 var (
@@ -15,4 +16,5 @@ var (
 var ApiGroupApp = ApiGroup{
 	User:           userApi{},
 	AnimeRecordApi: animeRecordApi{},
+	AuthCheckApi:   authCheckApi{},
 }
