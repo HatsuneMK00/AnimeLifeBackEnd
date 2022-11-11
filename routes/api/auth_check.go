@@ -10,6 +10,6 @@ type authCheckRouter struct{}
 func (r authCheckRouter) AddAuthCheckRoutes(rg *gin.RouterGroup) {
 	authCheck := rg.Group("/auth_check")
 	{
-		authCheck.GET("/", apis.ApiGroupApp.AuthCheckApi.AuthCheck)
+		authCheck.GET("", apis.ApiGroupApp.AuthCheckApi.AuthCheck)
 	}
 }

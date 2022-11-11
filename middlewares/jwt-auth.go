@@ -12,19 +12,21 @@ import (
 )
 
 func InitJWTAuth() *jwt.GinJWTMiddleware {
+	jwtConfig := global.Config.Jwt
+	global.Logger.Debugf("jwt config: %+v", jwtConfig)
+
 	middleware, err := jwt.New(&jwt.GinJWTMiddleware{
-		Realm:       "AnimeLife",
-		Key:         []byte("The secret makes a project project"),
+		Realm:       jwtConfig.Realm,
+		Key:         []byte(jwtConfig.SecretKey),
 		Timeout:     12 * time.Hour,
 		MaxRefresh:  4 * time.Hour,
-		IdentityKey: "id",
+		IdentityKey: jwtConfig.IdentityKey,
 		SendCookie:  false,
 		PayloadFunc: func(data interface{}) jwt.MapClaims {
 			if v, ok := data.(*entity.User); ok {
 				return jwt.MapClaims{
-					jwt.IdentityKey: v.ID,
-					"username":      v.Username,
-					"email":         v.Email,
+					jwtConfig.IdentityKey: v.ID,
+					"username":            v.Username,
 				}
 			}
 			return jwt.MapClaims{}

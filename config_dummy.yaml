@@ -19,3 +19,7 @@ zap:
   prefix: '[First Go App]'
   show-line: true
   stacktrace-key: stacktrace
+jwt:
+  identity-key: 'dummy'
+  secret-key: 'dummy'
+  realm: 'dummy'

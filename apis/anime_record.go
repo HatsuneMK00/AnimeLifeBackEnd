@@ -4,6 +4,8 @@ import (
 	"AnimeLifeBackEnd/entity"
 	"AnimeLifeBackEnd/entity/request"
 	"AnimeLifeBackEnd/global"
+	"errors"
+	jwt "github.com/appleboy/gin-jwt/v2"
 	"github.com/gin-gonic/gin"
 	"net/url"
 	"strconv"
@@ -22,10 +24,10 @@ type animeRecordApi struct{}
 
 func (a animeRecordApi) FetchAnimeRecords(c *gin.Context) {
 	// return 15 records from offset at a time
-	userId, err := strconv.Atoi(c.Param("userId"))
+	userId, err := getUserIdFromJwtToken(c)
 	if err != nil {
 		c.JSON(400, gin.H{
-			"message": "user id needs to be uint",
+			"message": "fail to get user id from jwt token, or user id is not int",
 		})
 		return
 	}
@@ -51,10 +53,10 @@ func (a animeRecordApi) FetchAnimeRecords(c *gin.Context) {
 
 func (a animeRecordApi) FetchAnimeRecordsOfRating(c *gin.Context) {
 	// return 15 records from offset at a time
-	userId, err := strconv.Atoi(c.Param("userId"))
+	userId, err := getUserIdFromJwtToken(c)
 	if err != nil {
 		c.JSON(400, gin.H{
-			"message": "user id needs to be uint",
+			"message": "fail to get user id from jwt token, or user id is not int",
 		})
 		return
 	}
@@ -86,10 +88,10 @@ func (a animeRecordApi) FetchAnimeRecordsOfRating(c *gin.Context) {
 }
 
 func (a animeRecordApi) FetchAnimeRecordSummary(c *gin.Context) {
-	userId, err := strconv.Atoi(c.Param("userId"))
+	userId, err := getUserIdFromJwtToken(c)
 	if err != nil {
 		c.JSON(400, gin.H{
-			"message": "user id needs to be uint",
+			"message": "fail to get user id from jwt token, or user id is not int",
 		})
 		return
 	}
@@ -128,10 +130,10 @@ func (a animeRecordApi) AddAnimeRecord(c *gin.Context) {
 		})
 		return
 	}
-	userId, err := strconv.Atoi(c.Param("userId"))
+	userId, err := getUserIdFromJwtToken(c)
 	if err != nil {
 		c.JSON(400, gin.H{
-			"message": "user id needs to be uint",
+			"message": "fail to get user id from jwt token, or user id is not int",
 		})
 		return
 	}
@@ -160,10 +162,10 @@ func (a animeRecordApi) AddAnimeRecord(c *gin.Context) {
 }
 
 func (a animeRecordApi) UpdateAnimeRecord(c *gin.Context) {
-	userId, err := strconv.Atoi(c.Param("userId"))
+	userId, err := getUserIdFromJwtToken(c)
 	if err != nil {
 		c.JSON(400, gin.H{
-			"message": "user id needs to be uint",
+			"message": "fail to get user id from jwt token, or user id is not int",
 		})
 		return
 	}
@@ -214,10 +216,10 @@ func (a animeRecordApi) UpdateAnimeRecord(c *gin.Context) {
 
 func (a animeRecordApi) SearchAnimeRecords(c *gin.Context) {
 	// return 15 records from offset at a time
-	userId, err := strconv.Atoi(c.Param("userId"))
+	userId, err := getUserIdFromJwtToken(c)
 	if err != nil {
 		c.JSON(400, gin.H{
-			"message": "user id needs to be uint",
+			"message": "fail to get user id from jwt token, or user id is not int",
 		})
 		return
 	}
@@ -246,4 +248,17 @@ func (a animeRecordApi) SearchAnimeRecords(c *gin.Context) {
 		"message": "success",
 		"data":    animeRecords,
 	})
+}
+
+func getUserIdFromJwtToken(c *gin.Context) (int, error) {
+	claims := jwt.ExtractClaims(c)
+	global.Logger.Debugf("claims: %v", claims)
+	userId := claims[global.Config.Jwt.IdentityKey]
+	global.Logger.Debugf("userId: %v", userId)
+	if userId, ok := userId.(float64); ok {
+		return int(userId), nil
+	} else {
+		err := errors.New("user id is not int")
+		return 0, err
+	}
 }
