@@ -1,6 +1,7 @@
 package core
 
 import (
+	"AnimeLifeBackEnd/env"
 	"AnimeLifeBackEnd/global"
 	"flag"
 	"fmt"
@@ -16,7 +17,11 @@ func InitViper() *viper.Viper {
 	flag.Parse()
 	if configFile == "" { // 优先级：命令行 > 环境变量 > 默认值
 		if envConfigFile := os.Getenv("CONFIG_FILE"); envConfigFile == "" {
-			configFile = "config_debug.yaml"
+			if env.Mode == "debug" {
+				configFile = "config/config_debug.yaml"
+			} else {
+				configFile = "config/config_release.yaml"
+			}
 		} else {
 			configFile = envConfigFile
 		}

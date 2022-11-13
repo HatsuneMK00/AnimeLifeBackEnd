@@ -19,6 +19,7 @@ zap:
   prefix: '[First Go App]'
   show-line: true
   stacktrace-key: stacktrace
+  log-file: 'log/anime_life.log'
 jwt:
   identity-key: 'dummy'
   secret-key: 'dummy'

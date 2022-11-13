@@ -18,8 +18,7 @@ func InitZapLogger(env string) *zap.Logger {
 
 func initZapFile() *zap.Logger {
 	w := zapcore.AddSync(&lumberjack.Logger{
-		// todo change to server path when deploying
-		Filename:   "/Users/makise/GolandProjects/AnimeLifeBackEnd/log/app.log",
+		Filename:   global.Config.Zap.LogFile,
 		MaxSize:    300, // MB
 		MaxBackups: 3,   // max file num to keep
 		MaxAge:     31,  // all file older than max age would be deleted, despite max backups
