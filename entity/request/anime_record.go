@@ -10,3 +10,7 @@ type AnimeRecordUpdateRequest struct {
 	AnimeId     int `json:"animeId"`
 	BangumiId   int `json:"bangumiId"`
 }
+
+type AnimeRecordDeleteRequest struct {
+	AnimeId int `json:"animeId"`
+}

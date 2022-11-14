@@ -22,6 +22,7 @@ type AnimeRecordService interface {
 	UpdateAnimeByBangumiId(bangumiId int, anime entity.Anime) (entity.Anime, error)
 	UpdateAnimeRecord(animeId, userId, rating int) (entity.UserAnime, error)
 	SearchAnimeRecords(userId, offset, limit int, keyword string) ([]response.AnimeRecord, error)
+	DeleteAnimeRecord(animeId, userId int) error
 }
 
 type animeRecordService struct{}
@@ -245,4 +246,17 @@ func (s animeRecordService) SearchAnimeRecords(userId, offset, limit int, keywor
 		global.Logger.Errorf("%v", err)
 	}
 	return animeRecords, err
+}
+
+func (s animeRecordService) DeleteAnimeRecord(animeId, userId int) error {
+	record := entity.UserAnime{
+		UserId:  userId,
+		AnimeId: animeId,
+	}
+	// delete record with soft delete can still be found in fetch api
+	err := global.MysqlDB.Unscoped().Delete(&record).Error
+	if err != nil {
+		global.Logger.Errorf("Fail to delete anime record. Err: %v", err)
+	}
+	return err
 }

@@ -18,6 +18,7 @@ type AnimeRecordApi interface {
 	AddAnimeRecord(c *gin.Context)
 	UpdateAnimeRecord(c *gin.Context)
 	SearchAnimeRecords(c *gin.Context)
+	DeleteAnimeRecord(c *gin.Context)
 }
 
 type animeRecordApi struct{}
@@ -247,6 +248,34 @@ func (a animeRecordApi) SearchAnimeRecords(c *gin.Context) {
 	c.JSON(200, gin.H{
 		"message": "success",
 		"data":    animeRecords,
+	})
+}
+
+func (a animeRecordApi) DeleteAnimeRecord(c *gin.Context) {
+	userId, err := getUserIdFromJwtToken(c)
+	if err != nil {
+		c.JSON(400, gin.H{
+			"message": "fail to get user id from jwt token, or user id is not int",
+		})
+		return
+	}
+	deleteRequest := request.AnimeRecordDeleteRequest{}
+	err = c.ShouldBindJSON(&deleteRequest)
+	if err != nil {
+		c.JSON(400, gin.H{
+			"message": "invalid request body",
+		})
+		return
+	}
+	err = animeRecordService.DeleteAnimeRecord(deleteRequest.AnimeId, userId)
+	if err != nil {
+		c.JSON(500, gin.H{
+			"message": "fail to delete anime record",
+		})
+		return
+	}
+	c.JSON(200, gin.H{
+		"message": "success deleting anime record with anime id " + strconv.Itoa(deleteRequest.AnimeId),
 	})
 }
 
