@@ -23,8 +23,8 @@ func main() {
 	} else {
 		router.Use(gin.Logger())
 		router.Use(gin.Recovery())
-		router.Use(middlewares.NewCors())
 	}
+	router.Use(middlewares.NewCors())
 	global.MysqlDB = core.InitMysqlDB()
 	if global.MysqlDB != nil {
 		core.RegisterTables(global.MysqlDB)
