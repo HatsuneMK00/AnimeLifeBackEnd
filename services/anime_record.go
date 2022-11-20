@@ -4,10 +4,10 @@ import (
 	"AnimeLifeBackEnd/entity"
 	"AnimeLifeBackEnd/entity/response"
 	"AnimeLifeBackEnd/global"
+	"AnimeLifeBackEnd/wrapper"
 	"encoding/json"
 	"gorm.io/gorm"
 	"io/ioutil"
-	"net/http"
 	"net/url"
 	"strconv"
 )
@@ -116,7 +116,7 @@ func (s animeRecordService) AddNewAnime(animeName string) (entity.Anime, error) 
 	}
 
 	encodedAnimeName := url.QueryEscape(animeName)
-	resp, err := http.Get("https://api.bgm.tv/search/subject/" + encodedAnimeName + "?type=2&responseGroup=small")
+	resp, err := wrapper.Get("https://api.bgm.tv/search/subject/" + encodedAnimeName + "?type=2&responseGroup=small")
 	if err != nil {
 		global.Logger.Errorf("AnimeLifeBackEnd/services/anime_record.go: AddNewAnime: %v", err)
 	} else {
@@ -182,17 +182,13 @@ func (s animeRecordService) FetchAnimeById(animeId int) (entity.Anime, error) {
 
 func (s animeRecordService) UpdateAnimeByBangumiId(bangumiId int, anime entity.Anime) (entity.Anime, error) {
 	// access to bangumi v0 api must contain a user-agent
-	client := &http.Client{}
-	req, _ := http.NewRequest("GET", "https://api.bgm.tv/v0/subjects/"+strconv.Itoa(bangumiId), nil)
-	req.Header.Add("User-Agent", "Kmakise/AnimeLife")
-	resp, err := client.Do(req)
+	resp, err := wrapper.GetWithHeader("https://api.bgm.tv/v0/subjects/"+strconv.Itoa(bangumiId), map[string]string{"User-Agent": "Kmakise/AnimeLife"})
 	if err != nil {
 		global.Logger.Errorf("Fail to get bangumi info. Err: %v", err)
 		return anime, err
 	}
 	defer resp.Body.Close()
 	body, _ := ioutil.ReadAll(resp.Body)
-	//global.Logger.Debugf("body: %s", string(body))
 
 	var data entity.BangumiAnime
 	if err := json.Unmarshal(body, &data); err != nil {
