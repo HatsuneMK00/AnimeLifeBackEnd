@@ -2,41 +2,63 @@ package websocket
 
 import (
 	"AnimeLifeBackEnd/global"
+	"AnimeLifeBackEnd/websocket/base"
 	"github.com/gorilla/websocket"
 	"net/http"
 	"time"
 )
 
-type Client struct {
+const (
+	pingPeriod = 5 * time.Second
+)
+
+type client struct {
 	// The websocket connection.
 	id   uint
-	hub  *Hub
+	hub  base.Hub
 	conn *websocket.Conn
-	send chan *Message
+	send chan *base.Message
 }
 
-func (c *Client) readPump() {
+func (c *client) Id() uint {
+	return c.id
+}
+
+func (c *client) Hub() base.Hub {
+	return c.hub
+}
+
+func (c *client) Send() chan *base.Message {
+	return c.send
+}
+
+func (c *client) Conn() *websocket.Conn {
+	return c.conn
+}
+
+func (c *client) readPump() {
 	defer func() {
-		c.hub.unregister <- c
+		c.hub.Unregister() <- c
 		c.conn.Close()
 	}()
 	c.conn.SetReadLimit(512)
 	c.conn.SetReadDeadline(time.Now().Add(60 * time.Second))
 	c.conn.SetPongHandler(func(string) error { c.conn.SetReadDeadline(time.Now().Add(60 * time.Second)); return nil })
 	for {
+		// once read message failed, the connection will be closed
 		_, message, err := c.conn.ReadMessage()
 		if err != nil {
 			if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
-				global.Logger.Errorf("error: %v", err)
+				global.Logger.Errorf("ReadMessage error: %v", err)
 			}
 			break
 		}
-		global.Logger.Infof("Client %v send message: %v", c.id, message)
+		global.Logger.Infof("Send to Client %v message: %v", c.id, message)
 	}
 }
 
-func (c *Client) writePump() {
-	ticker := time.NewTicker(5 * time.Second)
+func (c *client) writePump() {
+	ticker := time.NewTicker(pingPeriod)
 	defer func() {
 		c.conn.Close()
 		ticker.Stop()
@@ -66,7 +88,7 @@ func (c *Client) writePump() {
 			}
 		case <-ticker.C:
 			global.Logger.Infof("Client %v ping", c.id)
-			err := c.conn.WriteJSON(&Message{Data: "ping"})
+			err := c.conn.WriteJSON(&base.Message{Type: "ping"})
 			if err != nil {
 				global.Logger.Errorf("WriteJson error: %v", err)
 				return
@@ -75,7 +97,7 @@ func (c *Client) writePump() {
 	}
 }
 
-func ServeWs(hub *Hub, w http.ResponseWriter, r *http.Request) {
+func ServeWs(hub base.Hub, w http.ResponseWriter, r *http.Request) {
 	upgrader := websocket.Upgrader{
 		ReadBufferSize:  1024,
 		WriteBufferSize: 1024,
@@ -89,8 +111,8 @@ func ServeWs(hub *Hub, w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	client := &Client{hub: hub, conn: conn, send: make(chan *Message, 256)}
-	client.hub.register <- client
+	client := &client{hub: hub, conn: conn, send: make(chan *base.Message, 256)}
+	client.hub.Register() <- client
 
 	go client.writePump()
 	go client.readPump()

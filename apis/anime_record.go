@@ -4,6 +4,7 @@ import (
 	"AnimeLifeBackEnd/entity"
 	"AnimeLifeBackEnd/entity/request"
 	"AnimeLifeBackEnd/global"
+	entity2 "AnimeLifeBackEnd/websocket/base"
 	"errors"
 	jwt "github.com/appleboy/gin-jwt/v2"
 	"github.com/gin-gonic/gin"
@@ -139,6 +140,7 @@ func (a animeRecordApi) AddAnimeRecord(c *gin.Context) {
 		return
 	}
 
+	global.WsHub.Comm() <- &entity2.Message{Type: "message", Data: "fetching anime info from bangumi api"}
 	anime, err := animeRecordService.AddNewAnime(record.AnimeName)
 	if err != nil {
 		c.JSON(500, gin.H{
@@ -146,6 +148,7 @@ func (a animeRecordApi) AddAnimeRecord(c *gin.Context) {
 		})
 		return
 	}
+	global.WsHub.Comm() <- &entity2.Message{Type: "message", Data: "anime info fetched"}
 	animeRecord, err := animeRecordService.AddNewAnimeRecord(int(anime.ID), userId, record.AnimeRating)
 	if err != nil {
 		c.JSON(500, gin.H{

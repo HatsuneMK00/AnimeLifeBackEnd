@@ -35,8 +35,8 @@ func main() {
 	}
 
 	authJWT := middlewares.InitJWTAuth()
-	hub := websocket.NewHub()
-	go hub.Run()
+	global.WsHub = websocket.NewHub()
+	go global.WsHub.Run()
 
 	apiEndpointGroup := routes.RouterGroupApp.RouterGroup
 	authEndpoints := routes.RouterGroupApp.AuthRouter
@@ -45,7 +45,7 @@ func main() {
 	publicGroup := router.Group("")
 	{
 		authEndpoints.AddAuthRoutes(publicGroup, authJWT)
-		websocketEndpoints.AddWebsocketRoutes(publicGroup, hub)
+		websocketEndpoints.AddWebsocketRoutes(publicGroup)
 	}
 	privateGroup := router.Group("")
 	privateGroup.Use(authJWT.MiddlewareFunc())
