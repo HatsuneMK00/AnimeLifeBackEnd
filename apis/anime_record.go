@@ -281,9 +281,7 @@ func (a animeRecordApi) DeleteAnimeRecord(c *gin.Context) {
 
 func getUserIdFromJwtToken(c *gin.Context) (int, error) {
 	claims := jwt.ExtractClaims(c)
-	global.Logger.Debugf("claims: %v", claims)
 	userId := claims[global.Config.Jwt.IdentityKey]
-	global.Logger.Debugf("userId: %v", userId)
 	if userId, ok := userId.(float64); ok {
 		return int(userId), nil
 	} else {

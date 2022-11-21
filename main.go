@@ -6,6 +6,7 @@ import (
 	"AnimeLifeBackEnd/global"
 	"AnimeLifeBackEnd/middlewares"
 	"AnimeLifeBackEnd/routes"
+	"AnimeLifeBackEnd/websocket"
 	"github.com/gin-gonic/gin"
 )
 
@@ -25,6 +26,7 @@ func main() {
 		router.Use(gin.Recovery())
 	}
 	router.Use(middlewares.NewCors())
+	// Init Mysql
 	global.MysqlDB = core.InitMysqlDB()
 	if global.MysqlDB != nil {
 		core.RegisterTables(global.MysqlDB)
@@ -33,13 +35,17 @@ func main() {
 	}
 
 	authJWT := middlewares.InitJWTAuth()
+	hub := websocket.NewHub()
+	go hub.Run()
 
 	apiEndpointGroup := routes.RouterGroupApp.RouterGroup
 	authEndpoints := routes.RouterGroupApp.AuthRouter
+	websocketEndpoints := routes.RouterGroupApp.WebsocketRouter
 	// 注册所有不需要认证的endpoint
 	publicGroup := router.Group("")
 	{
 		authEndpoints.AddAuthRoutes(publicGroup, authJWT)
+		websocketEndpoints.AddWebsocketRoutes(publicGroup, hub)
 	}
 	privateGroup := router.Group("")
 	privateGroup.Use(authJWT.MiddlewareFunc())

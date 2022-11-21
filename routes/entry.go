@@ -7,6 +7,7 @@ import (
 type routerGroup struct {
 	api.RouterGroup
 	AuthRouter
+	WebsocketRouter
 }
 
 var RouterGroupApp = new(routerGroup)
