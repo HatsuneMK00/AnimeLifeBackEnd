@@ -9,7 +9,7 @@ import (
 )
 
 const (
-	pingPeriod = 5 * time.Second
+	pingPeriod = 45 * time.Second
 )
 
 type client struct {
