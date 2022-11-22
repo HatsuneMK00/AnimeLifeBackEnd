@@ -88,9 +88,9 @@ func (c *client) writePump() {
 			}
 		case <-ticker.C:
 			global.Logger.Infof("Client %v ping", c.id)
-			err := c.conn.WriteJSON(&base.Message{Type: "ping"})
+			err := c.conn.WriteMessage(websocket.PingMessage, nil)
 			if err != nil {
-				global.Logger.Errorf("WriteJson error: %v", err)
+				global.Logger.Errorf("Write Ping Message error: %v", err)
 				return
 			}
 		}

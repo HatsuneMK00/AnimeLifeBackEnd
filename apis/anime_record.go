@@ -207,13 +207,15 @@ func (a animeRecordApi) UpdateAnimeRecord(c *gin.Context) {
 		})
 		return
 	}
+	if !shouldAnimeUpdate || isAnimeUpdateFailed {
+		updatedAnime = anime
+	}
 	c.JSON(200, gin.H{
 		"message": "success",
 		"data": map[string]interface{}{
-			"record":              record,
-			"updatedAnime":        updatedAnime,
-			"shouldAnimeUpdate":   shouldAnimeUpdate,
-			"isAnimeUpdateFailed": isAnimeUpdateFailed,
+			"record":                 record,
+			"updated_anime":          updatedAnime,
+			"is_anime_update_failed": isAnimeUpdateFailed,
 		},
 	})
 }
