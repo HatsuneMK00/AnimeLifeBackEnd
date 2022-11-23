@@ -15,6 +15,7 @@ type UserApi interface {
 	AddUser(c *gin.Context)
 	UpdateUser(c *gin.Context)
 	DeleteUser(c *gin.Context)
+	FetchUserInfo(c *gin.Context)
 }
 
 type userApi struct{}
@@ -80,6 +81,28 @@ func (api userApi) AddUser(c *gin.Context) {
 		global.Logger.Infof("add user: %v", result.Username)
 	} else {
 		c.JSON(http.StatusOK, gin.H{"message": "unable to add user"})
+	}
+}
+
+func (api userApi) FetchUserInfo(c *gin.Context) {
+	userId, err := getUserIdFromJwtToken(c)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, response.Response{
+			Code:    http.StatusBadRequest,
+			Message: "fail to get user id from jwt token, or user id is not int",
+		})
+		return
+	}
+	if user, ok := userService.FindUser(uint(userId)); ok {
+		c.JSON(http.StatusOK, response.Response{
+			Code: http.StatusOK,
+			Data: user,
+		})
+	} else {
+		c.JSON(http.StatusOK, response.Response{
+			Code:    404,
+			Message: "user not found",
+		})
 	}
 }
 

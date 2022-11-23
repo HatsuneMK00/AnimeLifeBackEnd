@@ -39,6 +39,9 @@ func (s userService) FindUsersWithOffset(offset int) ([]entity.User, bool) {
 		global.Logger.Errorf("%v", result.Error)
 		ok = false
 	}
+	for i := range users {
+		users[i].Password = ""
+	}
 	return users, ok
 }
 
@@ -52,5 +55,6 @@ func (s userService) FindUser(id uint) (*entity.User, bool) {
 		global.Logger.Errorf("%v", result.Error)
 		ok = false
 	}
+	user.Password = ""
 	return &user, ok
 }
