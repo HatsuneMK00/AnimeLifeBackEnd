@@ -53,7 +53,7 @@ func (c *client) readPump() {
 			}
 			break
 		}
-		global.Logger.Infof("Send to Client %v message: %v", c.id, message)
+		global.Logger.Debugf("Send to Client %v message: %v", c.id, message)
 	}
 }
 
@@ -87,7 +87,7 @@ func (c *client) writePump() {
 				}
 			}
 		case <-ticker.C:
-			global.Logger.Infof("Client %v ping", c.id)
+			global.Logger.Debugf("Client %v ping", c.id)
 			err := c.conn.WriteMessage(websocket.PingMessage, nil)
 			if err != nil {
 				global.Logger.Errorf("Write Ping Message error: %v", err)
