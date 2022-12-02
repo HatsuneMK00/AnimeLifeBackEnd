@@ -114,6 +114,16 @@ func (s animeRecordService) AddNewAnime(animeName string) (entity.Anime, error) 
 		Cover:     "",
 		BangumiId: -1,
 	}
+	// search whether there is a same anime in database first
+	var animeInDB entity.Anime
+	err := global.MysqlDB.Where("name = ?", animeName).First(&animeInDB).Error
+	if err == nil {
+		return animeInDB, nil
+	}
+	if err != gorm.ErrRecordNotFound {
+		global.Logger.Errorf("AnimeLifeBackEnd/services/anime_record.go: Unknown error. AddNewAnime: %v", err)
+		return anime, err
+	}
 
 	encodedAnimeName := url.QueryEscape(animeName)
 	resp, err := wrapper.Get("https://api.bgm.tv/search/subject/" + encodedAnimeName + "?type=2&responseGroup=small")
@@ -134,22 +144,12 @@ func (s animeRecordService) AddNewAnime(animeName string) (entity.Anime, error) 
 		}
 	}
 
-	// search whether there is a same anime in database
-	var animeInDB entity.Anime
-	err = global.MysqlDB.Where("name = ?", animeName).First(&animeInDB).Error
+	// add new anime to database
+	err = global.MysqlDB.Create(&anime).Error
 	if err != nil {
-		if err == gorm.ErrRecordNotFound {
-			// add new anime to database
-			err = global.MysqlDB.Create(&anime).Error
-			if err != nil {
-				global.Logger.Errorf("AnimeLifeBackEnd/services/anime_record.go: Fail to add new anime. AddNewAnime: %v", err)
-			}
-		} else {
-			global.Logger.Errorf("AnimeLifeBackEnd/services/anime_record.go: Unknown error. AddNewAnime: %v", err)
-		}
-	} else {
-		anime = animeInDB
+		global.Logger.Errorf("AnimeLifeBackEnd/services/anime_record.go: Fail to add new anime. AddNewAnime: %v", err)
 	}
+
 	return anime, err
 }
 
