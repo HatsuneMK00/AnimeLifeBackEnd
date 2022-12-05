@@ -7,6 +7,7 @@ import (
 	"AnimeLifeBackEnd/wrapper"
 	"encoding/json"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 	"io/ioutil"
 	"net/url"
 	"strconv"
@@ -56,10 +57,10 @@ func (s animeRecordService) FetchAnimeRecords(userId uint, offset int, limit int
 	err := global.MysqlDB.Table("animes").
 		Joins("JOIN user_animes ON user_animes.anime_id = animes.id").
 		Where("user_animes.user_id = ?", userId).
-		Select("animes.*, user_animes.rating AS rating, user_animes.watch_count AS watch_count, user_animes.created_at AS record_at").
+		Select("animes.*, user_animes.rating AS rating, user_animes.watch_count AS watch_count, user_animes.created_at AS record_at, user_animes.updated_at AS modify_at").
 		Offset(offset).
 		Limit(limit).
-		Order("record_at DESC").
+		Order("modify_at DESC, record_at DESC").
 		Find(&animeRecords).Error
 	if err != nil {
 		global.Logger.Errorf("%v", err)
@@ -78,10 +79,10 @@ func (s animeRecordService) FetchAnimeRecordsOfRating(userId uint, offset int, l
 		Joins("JOIN user_animes ON user_animes.anime_id = animes.id").
 		Where("user_animes.user_id = ?", userId).
 		Where("user_animes.rating = ?", rating).
-		Select("animes.*, user_animes.rating AS rating, user_animes.watch_count AS watch_count, user_animes.created_at AS record_at").
+		Select("animes.*, user_animes.rating AS rating, user_animes.watch_count AS watch_count, user_animes.created_at AS record_at, user_animes.updated_at AS modify_at").
 		Offset(offset).
 		Limit(limit).
-		Order("record_at DESC").
+		Order("modify_at DESC, record_at DESC").
 		Find(&animeRecords).Error
 	if err != nil {
 		global.Logger.Errorf("%v", err)
@@ -179,7 +180,7 @@ func (s animeRecordService) AddNewAnimeRecord(animeId int, userId int, rating in
 				global.Logger.Errorf("AnimeLifeBackEnd/services/anime_record.go: Fail to add new anime record backup, rolling back. AddNewAnimeRecord: %v", err)
 				return err
 			}
-			if err := tx.Model(&userAnimeInDB).Updates(map[string]interface{}{
+			if err := tx.Model(&userAnimeInDB).Clauses(clause.Returning{}).Updates(map[string]interface{}{
 				"rating":      rating,
 				"watch_count": userAnimeInDB.WatchCount + 1,
 			}).Error; err != nil {
@@ -188,6 +189,7 @@ func (s animeRecordService) AddNewAnimeRecord(animeId int, userId int, rating in
 			}
 			return nil
 		})
+		userAnime = userAnimeInDB
 	} else {
 		if err != gorm.ErrRecordNotFound {
 			global.Logger.Errorf("AnimeLifeBackEnd/services/anime_record.go: Unknown error when finding user_anime. AddNewAnimeRecord: %v", err)
@@ -248,11 +250,13 @@ func (s animeRecordService) UpdateAnimeRecord(animeId, userId, rating int) (enti
 		AnimeId: animeId,
 		Rating:  rating,
 	}
-
-	err := global.MysqlDB.Model(&userAnime).Update("rating", rating).Error
+	// this update doesn't change updated_at
+	// using .Clauses(clause.Returning{}) only return changed column, not the whole record
+	err := global.MysqlDB.Model(&userAnime).Clauses(clause.Returning{}).UpdateColumn("rating", rating).Error
 	if err != nil {
 		global.Logger.Errorf("Fail to update rating column of anime record. Err: %v", err)
 	}
+	global.MysqlDB.First(&userAnime)
 	return userAnime, err
 }
 
@@ -268,10 +272,10 @@ func (s animeRecordService) SearchAnimeRecords(userId, offset, limit int, keywor
 		Where("user_animes.user_id = ?", userId).
 		Where("animes.name LIKE ?", "%"+keyword+"%").
 		Or("animes.name_jp LIKE ?", "%"+keyword+"%").
-		Select("animes.*, user_animes.rating AS rating, user_animes.watch_count AS watch_count, user_animes.created_at AS record_at").
+		Select("animes.*, user_animes.rating AS rating, user_animes.watch_count AS watch_count, user_animes.created_at AS record_at, user_animes.updated_at AS modify_at").
 		Offset(offset).
 		Limit(limit).
-		Order("record_at DESC").
+		Order("modify_at DESC, record_at DESC").
 		Find(&animeRecords).Error
 	if err != nil {
 		global.Logger.Errorf("%v", err)

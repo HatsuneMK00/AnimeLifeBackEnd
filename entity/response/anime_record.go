@@ -14,6 +14,7 @@ type AnimeRecord struct {
 	Rating     int       `json:"rating"`
 	Comment    string    `json:"comment"`
 	RecordAt   time.Time `json:"record_at"`
+	ModifyAt   time.Time `json:"modify_at"`
 	WatchCount int       `json:"watch_count"`
 }
 
