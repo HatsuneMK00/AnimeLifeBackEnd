@@ -19,9 +19,9 @@ type AnimeRecordService interface {
 	FetchAnimeRecordsOfRating(userId uint, offset int, limit int, rating int) ([]response.AnimeRecord, error)
 	FetchAnimeRecordSummary(userId uint) (response.AnimeRecordSummary, error)
 	AddNewAnime(animeName string) (entity.Anime, error)
-	AddNewAnimeRecord(animeId, userId, rating int) (entity.UserAnime, error)
+	AddNewAnimeRecord(animeId, userId, rating int, comment string) (entity.UserAnime, error)
 	UpdateAnimeByBangumiId(bangumiId int, anime entity.Anime) (entity.Anime, error)
-	UpdateAnimeRecord(animeId, userId, rating int) (entity.UserAnime, error)
+	UpdateAnimeRecord(animeId, userId, rating int, comment string) (entity.UserAnime, error)
 	SearchAnimeRecords(userId, offset, limit int, keyword string) ([]response.AnimeRecord, error)
 	DeleteAnimeRecord(animeId, userId int) error
 }
@@ -57,7 +57,7 @@ func (s animeRecordService) FetchAnimeRecords(userId uint, offset int, limit int
 	err := global.MysqlDB.Table("animes").
 		Joins("JOIN user_animes ON user_animes.anime_id = animes.id").
 		Where("user_animes.user_id = ?", userId).
-		Select("animes.*, user_animes.rating AS rating, user_animes.watch_count AS watch_count, user_animes.created_at AS record_at, user_animes.updated_at AS modify_at").
+		Select("animes.*, user_animes.comment, user_animes.rating AS rating, user_animes.watch_count AS watch_count, user_animes.created_at AS record_at, user_animes.updated_at AS modify_at").
 		Offset(offset).
 		Limit(limit).
 		Order("modify_at DESC, record_at DESC").
@@ -79,7 +79,7 @@ func (s animeRecordService) FetchAnimeRecordsOfRating(userId uint, offset int, l
 		Joins("JOIN user_animes ON user_animes.anime_id = animes.id").
 		Where("user_animes.user_id = ?", userId).
 		Where("user_animes.rating = ?", rating).
-		Select("animes.*, user_animes.rating AS rating, user_animes.watch_count AS watch_count, user_animes.created_at AS record_at, user_animes.updated_at AS modify_at").
+		Select("animes.*, user_animes.comment, user_animes.rating AS rating, user_animes.watch_count AS watch_count, user_animes.created_at AS record_at, user_animes.updated_at AS modify_at").
 		Offset(offset).
 		Limit(limit).
 		Order("modify_at DESC, record_at DESC").
@@ -154,11 +154,12 @@ func (s animeRecordService) AddNewAnime(animeName string) (entity.Anime, error) 
 	return anime, err
 }
 
-func (s animeRecordService) AddNewAnimeRecord(animeId int, userId int, rating int) (entity.UserAnime, error) {
+func (s animeRecordService) AddNewAnimeRecord(animeId int, userId int, rating int, comment string) (entity.UserAnime, error) {
 	userAnime := entity.UserAnime{
 		UserId:  userId,
 		AnimeId: animeId,
 		Rating:  rating,
+		Comment: comment,
 	}
 
 	// check whether there is a same record in database first
@@ -182,6 +183,7 @@ func (s animeRecordService) AddNewAnimeRecord(animeId int, userId int, rating in
 			}
 			if err := tx.Model(&userAnimeInDB).Clauses(clause.Returning{}).Updates(map[string]interface{}{
 				"rating":      rating,
+				"comment":     comment,
 				"watch_count": userAnimeInDB.WatchCount + 1,
 			}).Error; err != nil {
 				global.Logger.Errorf("AnimeLifeBackEnd/services/anime_record.go: Fail to update anime record, rolling back. AddNewAnimeRecord: %v", err)
@@ -244,15 +246,19 @@ func (s animeRecordService) UpdateAnimeByBangumiId(bangumiId int, anime entity.A
 	return anime, err
 }
 
-func (s animeRecordService) UpdateAnimeRecord(animeId, userId, rating int) (entity.UserAnime, error) {
+func (s animeRecordService) UpdateAnimeRecord(animeId, userId, rating int, comment string) (entity.UserAnime, error) {
 	userAnime := entity.UserAnime{
 		UserId:  userId,
 		AnimeId: animeId,
 		Rating:  rating,
+		Comment: comment,
 	}
 	// this update doesn't change updated_at
 	// using .Clauses(clause.Returning{}) only return changed column, not the whole record
-	err := global.MysqlDB.Model(&userAnime).Clauses(clause.Returning{}).UpdateColumn("rating", rating).Error
+	err := global.MysqlDB.Model(&userAnime).Clauses(clause.Returning{}).UpdateColumns(map[string]interface{}{
+		"rating":  rating,
+		"comment": comment,
+	}).Error
 	if err != nil {
 		global.Logger.Errorf("Fail to update rating column of anime record. Err: %v", err)
 	}
@@ -272,7 +278,7 @@ func (s animeRecordService) SearchAnimeRecords(userId, offset, limit int, keywor
 		Where("user_animes.user_id = ?", userId).
 		Where("animes.name LIKE ?", "%"+keyword+"%").
 		Or("animes.name_jp LIKE ?", "%"+keyword+"%").
-		Select("animes.*, user_animes.rating AS rating, user_animes.watch_count AS watch_count, user_animes.created_at AS record_at, user_animes.updated_at AS modify_at").
+		Select("animes.*, user_animes.comment, user_animes.rating AS rating, user_animes.watch_count AS watch_count, user_animes.created_at AS record_at, user_animes.updated_at AS modify_at").
 		Offset(offset).
 		Limit(limit).
 		Order("modify_at DESC, record_at DESC").
