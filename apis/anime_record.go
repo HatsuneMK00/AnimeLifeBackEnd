@@ -152,7 +152,7 @@ func (a animeRecordApi) AddAnimeRecord(c *gin.Context) {
 	animeRecord, err := animeRecordService.AddNewAnimeRecord(int(anime.ID), userId, record.AnimeRating)
 	if err != nil {
 		c.JSON(500, gin.H{
-			"message": "fail to add anime record, maybe the record already exists",
+			"message": "fail to add anime record, some error occurred",
 		})
 		return
 	}

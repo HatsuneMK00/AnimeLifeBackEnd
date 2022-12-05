@@ -28,7 +28,7 @@ func InitMysqlDB() *gorm.DB {
 }
 
 func RegisterTables(db *gorm.DB) {
-	err := db.AutoMigrate(&entity.User{}, &entity.Anime{}, &entity.UserAnime{})
+	err := db.AutoMigrate(&entity.User{}, &entity.Anime{}, &entity.UserAnime{}, &entity.AnimeRecord{})
 	if err != nil {
 		global.Logger.Errorf("Database: RegisterTables failed, err: %v", zap.Error(err))
 		os.Exit(0)

@@ -56,7 +56,7 @@ func (s animeRecordService) FetchAnimeRecords(userId uint, offset int, limit int
 	err := global.MysqlDB.Table("animes").
 		Joins("JOIN user_animes ON user_animes.anime_id = animes.id").
 		Where("user_animes.user_id = ?", userId).
-		Select("animes.*, user_animes.rating AS rating, user_animes.created_at AS record_at").
+		Select("animes.*, user_animes.rating AS rating, user_animes.watch_count AS watch_count, user_animes.created_at AS record_at").
 		Offset(offset).
 		Limit(limit).
 		Order("record_at DESC").
@@ -78,7 +78,7 @@ func (s animeRecordService) FetchAnimeRecordsOfRating(userId uint, offset int, l
 		Joins("JOIN user_animes ON user_animes.anime_id = animes.id").
 		Where("user_animes.user_id = ?", userId).
 		Where("user_animes.rating = ?", rating).
-		Select("animes.*, user_animes.rating AS rating, user_animes.created_at AS record_at").
+		Select("animes.*, user_animes.rating AS rating, user_animes.watch_count AS watch_count, user_animes.created_at AS record_at").
 		Offset(offset).
 		Limit(limit).
 		Order("record_at DESC").
@@ -160,10 +160,45 @@ func (s animeRecordService) AddNewAnimeRecord(animeId int, userId int, rating in
 		Rating:  rating,
 	}
 
-	err := global.MysqlDB.Create(&userAnime).Error
-	if err != nil {
-		global.Logger.Errorf("AnimeLifeBackEnd/services/anime_record.go: Maybe duplicate record. AddNewAnimeRecord: %v", err)
+	// check whether there is a same record in database first
+	var userAnimeInDB entity.UserAnime
+	err := global.MysqlDB.Where("user_id = ? AND anime_id = ?", userId, animeId).First(&userAnimeInDB).Error
+	// if there is a same record, update the watch count and rating, save previous one to history table
+	if err == nil {
+		animeRecordBak := entity.AnimeRecord{
+			UserId:    userAnimeInDB.UserId,
+			AnimeId:   userAnimeInDB.AnimeId,
+			Rating:    userAnimeInDB.Rating,
+			CreatedAt: userAnimeInDB.CreatedAt,
+			UpdatedAt: userAnimeInDB.UpdatedAt,
+			DeletedAt: userAnimeInDB.DeletedAt,
+			Comment:   userAnimeInDB.Comment,
+		}
+		err = global.MysqlDB.Transaction(func(tx *gorm.DB) error {
+			if err := tx.Create(&animeRecordBak).Error; err != nil {
+				global.Logger.Errorf("AnimeLifeBackEnd/services/anime_record.go: Fail to add new anime record backup, rolling back. AddNewAnimeRecord: %v", err)
+				return err
+			}
+			if err := tx.Model(&userAnimeInDB).Updates(map[string]interface{}{
+				"rating":      rating,
+				"watch_count": userAnimeInDB.WatchCount + 1,
+			}).Error; err != nil {
+				global.Logger.Errorf("AnimeLifeBackEnd/services/anime_record.go: Fail to update anime record, rolling back. AddNewAnimeRecord: %v", err)
+				return err
+			}
+			return nil
+		})
+	} else {
+		if err != gorm.ErrRecordNotFound {
+			global.Logger.Errorf("AnimeLifeBackEnd/services/anime_record.go: Unknown error when finding user_anime. AddNewAnimeRecord: %v", err)
+		}
+		// if there is no same record, create a new one
+		err = global.MysqlDB.Create(&userAnime).Error
+		if err != nil {
+			global.Logger.Errorf("AnimeLifeBackEnd/services/anime_record.go: Fail to add new anime record. AddNewAnimeRecord: %v", err)
+		}
 	}
+
 	return userAnime, err
 }
 
@@ -233,7 +268,7 @@ func (s animeRecordService) SearchAnimeRecords(userId, offset, limit int, keywor
 		Where("user_animes.user_id = ?", userId).
 		Where("animes.name LIKE ?", "%"+keyword+"%").
 		Or("animes.name_jp LIKE ?", "%"+keyword+"%").
-		Select("animes.*, user_animes.rating AS rating, user_animes.created_at AS record_at").
+		Select("animes.*, user_animes.rating AS rating, user_animes.watch_count AS watch_count, user_animes.created_at AS record_at").
 		Offset(offset).
 		Limit(limit).
 		Order("record_at DESC").
