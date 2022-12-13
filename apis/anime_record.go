@@ -149,7 +149,7 @@ func (a animeRecordApi) AddAnimeRecord(c *gin.Context) {
 		return
 	}
 	global.WsHub.Comm() <- &entity2.Message{Type: "message", Data: "anime info fetched"}
-	animeRecord, err := animeRecordService.AddNewAnimeRecord(int(anime.ID), userId, record.AnimeRating, record.Commment)
+	animeRecord, isNewRecord, err := animeRecordService.AddNewAnimeRecord(int(anime.ID), userId, record.AnimeRating, record.Commment)
 	if err != nil {
 		c.JSON(500, gin.H{
 			"message": "fail to add anime record, some error occurred",
@@ -161,6 +161,7 @@ func (a animeRecordApi) AddAnimeRecord(c *gin.Context) {
 		"data": map[string]interface{}{
 			"anime":  anime,
 			"record": animeRecord,
+			"is_new": isNewRecord,
 		},
 	})
 }

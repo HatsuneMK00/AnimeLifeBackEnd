@@ -19,7 +19,7 @@ type AnimeRecordService interface {
 	FetchAnimeRecordsOfRating(userId uint, offset int, limit int, rating int) ([]response.AnimeRecord, error)
 	FetchAnimeRecordSummary(userId uint) (response.AnimeRecordSummary, error)
 	AddNewAnime(animeName string) (entity.Anime, error)
-	AddNewAnimeRecord(animeId, userId, rating int, comment string) (entity.UserAnime, error)
+	AddNewAnimeRecord(animeId, userId, rating int, comment string) (entity.UserAnime, bool, error)
 	UpdateAnimeByBangumiId(bangumiId int, anime entity.Anime) (entity.Anime, error)
 	UpdateAnimeRecord(animeId, userId, rating int, comment string) (entity.UserAnime, error)
 	SearchAnimeRecords(userId, offset, limit int, keyword string) ([]response.AnimeRecord, error)
@@ -154,7 +154,8 @@ func (s animeRecordService) AddNewAnime(animeName string) (entity.Anime, error) 
 	return anime, err
 }
 
-func (s animeRecordService) AddNewAnimeRecord(animeId int, userId int, rating int, comment string) (entity.UserAnime, error) {
+func (s animeRecordService) AddNewAnimeRecord(animeId int, userId int, rating int, comment string) (entity.UserAnime, bool, error) {
+	var isNewAnimeRecord bool
 	userAnime := entity.UserAnime{
 		UserId:  userId,
 		AnimeId: animeId,
@@ -167,6 +168,7 @@ func (s animeRecordService) AddNewAnimeRecord(animeId int, userId int, rating in
 	err := global.MysqlDB.Where("user_id = ? AND anime_id = ?", userId, animeId).First(&userAnimeInDB).Error
 	// if there is a same record, update the watch count and rating, save previous one to history table
 	if err == nil {
+		isNewAnimeRecord = false
 		animeRecordBak := entity.AnimeRecord{
 			UserId:    userAnimeInDB.UserId,
 			AnimeId:   userAnimeInDB.AnimeId,
@@ -193,6 +195,7 @@ func (s animeRecordService) AddNewAnimeRecord(animeId int, userId int, rating in
 		})
 		userAnime = userAnimeInDB
 	} else {
+		isNewAnimeRecord = true
 		if err != gorm.ErrRecordNotFound {
 			global.Logger.Errorf("AnimeLifeBackEnd/services/anime_record.go: Unknown error when finding user_anime. AddNewAnimeRecord: %v", err)
 		}
@@ -203,7 +206,7 @@ func (s animeRecordService) AddNewAnimeRecord(animeId int, userId int, rating in
 		}
 	}
 
-	return userAnime, err
+	return userAnime, isNewAnimeRecord, err
 }
 
 func (s animeRecordService) FetchAnimeById(animeId int) (entity.Anime, error) {
