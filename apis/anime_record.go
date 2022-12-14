@@ -16,6 +16,7 @@ type AnimeRecordApi interface {
 	FetchAnimeRecords(c *gin.Context)
 	FetchAnimeRecordsOfRating(c *gin.Context)
 	FetchAnimeRecordSummary(c *gin.Context)
+	FetchHistoryRatingOfRecord(c *gin.Context)
 	AddAnimeRecord(c *gin.Context)
 	UpdateAnimeRecord(c *gin.Context)
 	SearchAnimeRecords(c *gin.Context)
@@ -107,6 +108,34 @@ func (a animeRecordApi) FetchAnimeRecordSummary(c *gin.Context) {
 	c.JSON(200, gin.H{
 		"message": "success",
 		"data":    summary,
+	})
+}
+
+func (a animeRecordApi) FetchHistoryRatingOfRecord(c *gin.Context) {
+	userId, err := getUserIdFromJwtToken(c)
+	if err != nil {
+		c.JSON(400, gin.H{
+			"message": "fail to get user id from jwt token, or user id is not int",
+		})
+		return
+	}
+	animeId, err := strconv.Atoi(c.Query("animeId"))
+	if err != nil {
+		c.JSON(400, gin.H{
+			"message": "animeId needs to be uint",
+		})
+		return
+	}
+	ratings, err := animeRecordService.FetchHistoryRatingOfRecord(uint(userId), uint(animeId))
+	if err != nil {
+		c.JSON(500, gin.H{
+			"message": "db error",
+		})
+		return
+	}
+	c.JSON(200, gin.H{
+		"message": "success",
+		"data":    ratings,
 	})
 }
 

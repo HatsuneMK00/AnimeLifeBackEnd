@@ -18,6 +18,7 @@ type AnimeRecordService interface {
 	FetchAnimeRecords(userId uint, offset int, limit int) ([]response.AnimeRecord, error)
 	FetchAnimeRecordsOfRating(userId uint, offset int, limit int, rating int) ([]response.AnimeRecord, error)
 	FetchAnimeRecordSummary(userId uint) (response.AnimeRecordSummary, error)
+	FetchHistoryRatingOfRecord(userId, animeId uint) ([]entity.AnimeRecord, error)
 	AddNewAnime(animeName string) (entity.Anime, error)
 	AddNewAnimeRecord(animeId, userId, rating int, comment string) (entity.UserAnime, bool, error)
 	UpdateAnimeByBangumiId(bangumiId int, anime entity.Anime) (entity.Anime, error)
@@ -106,6 +107,15 @@ func (s animeRecordService) FetchAnimeRecordSummary(userId uint) (response.Anime
 		global.Logger.Errorf("%v", err)
 	}
 	return animeRecordSummary, err
+}
+
+func (s animeRecordService) FetchHistoryRatingOfRecord(userId, animeId uint) ([]entity.AnimeRecord, error) {
+	ratings := make([]entity.AnimeRecord, 0)
+	err := global.MysqlDB.Where("user_id = ? AND anime_id = ?", userId, animeId).Find(&ratings).Error
+	if err != nil {
+		global.Logger.Errorf("%v", err)
+	}
+	return ratings, err
 }
 
 func (s animeRecordService) AddNewAnime(animeName string) (entity.Anime, error) {
