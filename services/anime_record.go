@@ -148,10 +148,12 @@ func (s animeRecordService) AddNewAnime(animeName string) (entity.Anime, error) 
 		if err := json.Unmarshal(body, &data); err != nil {
 			global.Logger.Errorf("AnimeLifeBackEnd/services/anime_record.go: jsonify when AddNewAnime: %v", err)
 		} else {
-			animeInfo := data.List[0]
-			anime.NameJp = animeInfo.Name
-			anime.Cover = animeInfo.Images.Large
-			anime.BangumiId = animeInfo.Id
+			if data.List != nil && len(data.List) > 0 {
+				animeInfo := data.List[0]
+				anime.NameJp = animeInfo.Name
+				anime.Cover = animeInfo.Images.Large
+				anime.BangumiId = animeInfo.Id
+			}
 		}
 	}
 
