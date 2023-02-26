@@ -51,6 +51,7 @@ func (a animeRecordApi) FetchAnimeRecords(c *gin.Context) {
 	c.JSON(200, gin.H{
 		"message": "success",
 		"data":    animes,
+		"hasMore": !(len(animes) < 15),
 	})
 }
 
@@ -87,6 +88,7 @@ func (a animeRecordApi) FetchAnimeRecordsOfRating(c *gin.Context) {
 	c.JSON(200, gin.H{
 		"message": "success",
 		"data":    animes,
+		"hasMore": !(len(animes) < 15),
 	})
 }
 
@@ -283,6 +285,7 @@ func (a animeRecordApi) SearchAnimeRecords(c *gin.Context) {
 	c.JSON(200, gin.H{
 		"message": "success",
 		"data":    animeRecords,
+		"hasMore": !(len(animeRecords) < 15),
 	})
 }
 
