@@ -21,7 +21,7 @@ jobs:
         
       - name: Deploy to Aliyun
         uses: easingthemes/ssh-deploy@v4.1.8
-        with:
+        env:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
           ARGS: "-rlgoDzvc -i --delete"
           SOURCE: "./"
