@@ -1,8 +1,7 @@
 on:
-#   pull_request:
-#     branches:
-#       - deploy
-  workflow_dispatch:
+  pull_request:
+    branches:
+      - deploy
 
 jobs:
   build-and-deploy:
@@ -19,6 +18,9 @@ jobs:
     - name: Set current date
       id: date
       run: echo "::set-output name=date::$(date +'%Y%m%d%H%M')"
+      
+    - name: Download dependencies
+      run: go get -d ./...
         
     - name: Build
       run: go build -v ./... -tags=release
