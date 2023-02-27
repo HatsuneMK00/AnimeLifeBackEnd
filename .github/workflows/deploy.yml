@@ -19,12 +19,9 @@ jobs:
     - name: Set current date
       id: date
       run: echo "::set-output name=date::$(date +'%Y%m%d%H%M')"
-      
-    - name: Download dependencies
-      run: go get -d ./...
         
     - name: Build
-      run: go build -tags=release -o ./go_build_linux_linux_$CURRENT_DATE ./main.go
+      run: go build -v ./... -tags=release
       env:
         CURRENT_DATE: ${{ steps.date.outputs.date }}
       
