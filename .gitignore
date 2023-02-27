@@ -4,5 +4,5 @@ repository/config.go
 config_debug.yaml
 config_release.yaml
 env/debug.go
-env/release.go
+#env/release.go
 /build/
