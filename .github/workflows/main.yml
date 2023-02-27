@@ -5,9 +5,20 @@ jobs:
   set_up_go:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-go@v3
+      - name: Checkout
+        uses: actions/checkout@v3
+        
+      - name: Set up go
+        uses: actions/setup-go@v3
         with:
-          go-version: '>=1.17.0'
-      - run: go version
+          go-version: '1.20'
+      
+      - name: Go version
+        run: go version
+        
+      - name: ls
+        run: ls . -l
+        
+      - name: Show go path
+        run: echo $GOPATH
       
