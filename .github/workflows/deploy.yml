@@ -27,10 +27,10 @@ jobs:
     - name: Deploy to Aliyun
       uses: easingthemes/ssh-deploy@v4.1.8
       with:
-        SSH_PRIVATE_KEY: ${{ secrets.ALIYUN_SERVER_PRIVATE_KEY }}
+        SSH_PRIVATE_KEY: ${{ secrets.REMOTE_PRIVATE_KEY }}
         ARGS: "-rlgoDzvc -i --delete"
         SOURCE: "./"
-        TARGET: ${{ secrets.ALIYUN_SERVER_TARGET }}
-        REMOTE_HOST:  ${{ secrets.ALIYUN_SERVER_HOST }}
-        REMOTE_USER: ${{ secrets.ALIYUN_SERVER_USER }}
+        TARGET: ${{ secrets.REMOTE_TARGET }}
+        REMOTE_HOST:  ${{ secrets.REMOTE_HOST }}
+        REMOTE_USER: ${{ secrets.REMOTE_USER }}
         
