@@ -21,7 +21,7 @@ jobs:
         run: echo "date=$(date +'%Y%m%d%H%M')" >> $GITHUB_OUTPUT
         
       - name: Build
-        run: go build -tags=release -o ./build/go_build_linux_linux_$CURRENT_DATE ./main.go
+        run: CGO_ENABLED=0 go build -tags=release -o ./build/go_build_linux_linux_$CURRENT_DATE ./main.go
         env:
           CURRENT_DATE: ${{ steps.date.outputs.date }}
         
