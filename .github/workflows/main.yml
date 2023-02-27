@@ -2,7 +2,7 @@ on:
   workflow_dispatch:
   
 jobs:
-  set_up_go:
+  build-and-deploy:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -13,12 +13,19 @@ jobs:
         with:
           go-version: '1.20'
         
-      - name: ls
-        run: ls . -l
-        
       - name: Go get
         run: go mod download
         
       - name: Build
         run: go build -tags=release -o ./go_build_linux_linux ./main.go
+        
+      - name: Deploy to Aliyun
+        uses: easingthemes/ssh-deploy@v4.1.8
+        with:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          ARGS: "-rlgoDzvc -i --delete"
+          SOURCE: "./"
+          TARGET: ${{ secrets.REMOTE_TARGET }}
+          REMOTE_HOST: ${{ secrets.REMOTE_HOST }}
+          REMOTE_USER: ${{ secrets.REMOTE_USER }}
       
