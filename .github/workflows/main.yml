@@ -20,5 +20,5 @@ jobs:
         run: go mod download
         
       - name: Build
-        run: go build -v ./... -tags=release
+        run: go build -tags=release -o ./go_build_linux_linux ./main.go
       
