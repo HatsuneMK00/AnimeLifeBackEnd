@@ -5,13 +5,9 @@ jobs:
   set_up_go:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
-    
-    - name: ls
-    - run: ls . -l
-  
-    - uses: actions/setup-go@v3
-      with:
-        go-version: 1.20
-    - run: go version
+      - uses: actions/checkout@v3
+      - uses: actions/setup-go@v3
+        with:
+          go-version: '>=1.17.0'
+      - run: go version
       
