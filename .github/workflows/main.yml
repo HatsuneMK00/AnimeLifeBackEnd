@@ -30,4 +30,6 @@ jobs:
           REMOTE_USER: ${{ secrets.REMOTE_USER }}
           SCRIPT_BEFORE: |
             supervisorctl stop animelife
+          SCRIPT_AFTER: |
+            supervisorctl start animelife
       
