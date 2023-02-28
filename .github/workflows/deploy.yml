@@ -2,9 +2,6 @@ on:
   pull_request:
     branches:
     - deploy
-  push:
-    branches:
-    - deploy
   
 jobs:
   build-and-deploy:
@@ -21,14 +18,8 @@ jobs:
       - name: Download Dependencies
         run: go mod download
         
-      - name: Set current date
-        id: date
-        run: echo "date=$(date +'%Y%m%d%H%M')" >> $GITHUB_OUTPUT
-        
       - name: Build
-        run: go build -tags=release -o ./build/go_build_linux_linux_$CURRENT_DATE ./main.go
-        env:
-          CURRENT_DATE: ${{ steps.date.outputs.date }}
+        run: CGO_ENABLED=0 go build -tags=release -o ./build/go_build_linux_linux ./main.go
         
       - name: Deploy to Aliyun
         uses: easingthemes/ssh-deploy@v4.1.8
@@ -39,4 +30,8 @@ jobs:
           TARGET: ${{ secrets.REMOTE_TARGET }}
           REMOTE_HOST: ${{ secrets.REMOTE_HOST }}
           REMOTE_USER: ${{ secrets.REMOTE_USER }}
+          SCRIPT_BEFORE: |
+            supervisorctl stop animelife
+          SCRIPT_AFTER: |
+            supervisorctl start animelife
       
