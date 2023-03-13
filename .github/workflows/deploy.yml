@@ -30,8 +30,8 @@ jobs:
           TARGET: ${{ secrets.REMOTE_TARGET }}
           REMOTE_HOST: ${{ secrets.REMOTE_HOST }}
           REMOTE_USER: ${{ secrets.REMOTE_USER }}
-          SCRIPT_BEFORE: |
-            supervisorctl stop animelife
-          SCRIPT_AFTER: |
-            supervisorctl start animelife
+#           SCRIPT_BEFORE: |
+#             supervisorctl stop animelife
+#           SCRIPT_AFTER: |
+#             supervisorctl start animelife
       
