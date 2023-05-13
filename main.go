@@ -50,7 +50,12 @@ func main() {
 	privateGroup := router.Group("")
 	privateGroup.Use(authJWT.MiddlewareFunc())
 	{
-		apiEndpointGroup.AddApiRoutes(privateGroup, publicGroup)
+		// Only use authentication middleware in release mode
+		if env.Mode == "debug" {
+			apiEndpointGroup.AddApiRoutes(publicGroup, publicGroup)
+		} else {
+			apiEndpointGroup.AddApiRoutes(privateGroup, publicGroup)
+		}
 	}
 
 	router.Run(":8080")
