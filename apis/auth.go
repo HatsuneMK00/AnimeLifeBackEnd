@@ -27,7 +27,7 @@ func (a authApi) LoginViaEmail(c *gin.Context) {
 		// 3. generate a random 6 digits code and send it to the email
 		// 3.1 generate a random 6 digits code
 		code := rand.Intn(900000) + 100000
-		msgBody := "Your verification code for AnimeLife is %v."
+		msgBody := "Your verification code for AnimeLife is %v. This code will expire in 5 minutes."
 		msgBody = fmt.Sprintf(msgBody, code)
 		msg := []byte("To: " + email + "\r\n" +
 			"Subject: AnimeLife Verification Code\r\n" +
@@ -77,6 +77,14 @@ func (a authApi) RegisterViaEmail(c *gin.Context) {
 		Username: username,
 		Email:    email,
 		Password: password,
+	}
+	// Check if email exists in database
+	if _, ok := userService.FindUserByEmail(email); ok {
+		c.JSON(409, gin.H{
+			"code":    409,
+			"message": "email already exists",
+		})
+		return
 	}
 	user, rowAffected := userService.AddUser(&toAdd)
 	if rowAffected == 1 {

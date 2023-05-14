@@ -16,7 +16,7 @@ type authService struct{}
 
 func (a authService) SaveCode(email string, code int) error {
 	ctx := context.Background()
-	err := global.RedisDB.Set(ctx, email, code, time.Hour).Err()
+	err := global.RedisDB.Set(ctx, email, code, time.Minute*5).Err()
 	return err
 }
 
