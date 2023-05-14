@@ -33,6 +33,8 @@ func main() {
 		db, _ := global.MysqlDB.DB()
 		defer db.Close()
 	}
+	// Init Redis
+	global.RedisDB = core.InitRedisDB()
 
 	authJWT := middlewares.InitJWTAuth()
 	global.WsHub = websocket.NewHub()

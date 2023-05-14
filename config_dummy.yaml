@@ -24,3 +24,12 @@ jwt:
   identity-key: 'dummy'
   secret-key: 'dummy'
   realm: 'dummy'
+redis:
+  addr: xxx.xxx.xxx.xxx:6379
+  password: xxx
+  db: 0
+email:
+  host: smtp.163.com
+  port: 25
+  username: xxx
+  password: xxx
