@@ -12,5 +12,5 @@ func (r AuthRouter) AddAuthRoutes(rg *gin.RouterGroup, authJWT *jwt.GinJWTMiddle
 	rg.POST("/login", authJWT.LoginHandler)
 	rg.GET("/refresh_token", authJWT.RefreshHandler)
 	rg.GET("/login_via_email", apis.ApiGroupApp.AuthApi.LoginViaEmail)
-	rg.POST("/register", apis.ApiGroupApp.AuthApi.RegisterViaEmail)
+	//rg.POST("/register", apis.ApiGroupApp.AuthApi.RegisterViaEmail)
 }
