@@ -5,7 +5,6 @@ import "github.com/gin-gonic/gin"
 type RouterGroup struct {
 	userRouter
 	animeRecordRouter
-	authCheckRouter
 }
 
 func (r RouterGroup) AddApiRoutes(rg *gin.RouterGroup, rgPublic *gin.RouterGroup) {
@@ -13,5 +12,4 @@ func (r RouterGroup) AddApiRoutes(rg *gin.RouterGroup, rgPublic *gin.RouterGroup
 	publicApiGroup := rgPublic.Group("/api")
 	r.AddUserRoutes(apiGroup, publicApiGroup)
 	r.AddAnimeRecordRoutes(apiGroup)
-	r.AddAuthCheckRoutes(apiGroup)
 }

@@ -9,6 +9,7 @@ import (
 
 type UserService interface {
 	FindUser(id uint) (*entity.User, bool)
+	FindUserByEmail(email string) (*entity.User, bool)
 	FindUsersWithOffset(offset int) ([]entity.User, bool)
 	AddUser(user *entity.User) (*entity.User, int64)
 }
@@ -28,6 +29,7 @@ func (s userService) AddUser(user *entity.User) (*entity.User, int64) {
 	if result.Error != nil {
 		global.Logger.Errorf("%v", result.Error)
 	}
+	user.Password = ""
 	return user, result.RowsAffected
 }
 
@@ -50,6 +52,20 @@ func (s userService) FindUser(id uint) (*entity.User, bool) {
 		Model: gorm.Model{},
 	}
 	result := global.MysqlDB.First(&user, id)
+	ok := true
+	if result.Error != nil {
+		global.Logger.Errorf("%v", result.Error)
+		ok = false
+	}
+	user.Password = ""
+	return &user, ok
+}
+
+func (s userService) FindUserByEmail(email string) (*entity.User, bool) {
+	user := entity.User{
+		Model: gorm.Model{},
+	}
+	result := global.MysqlDB.Where("email = ?", email).First(&user)
 	ok := true
 	if result.Error != nil {
 		global.Logger.Errorf("%v", result.Error)

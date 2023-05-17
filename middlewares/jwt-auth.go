@@ -4,6 +4,7 @@ import (
 	"AnimeLifeBackEnd/entity"
 	"AnimeLifeBackEnd/entity/request"
 	"AnimeLifeBackEnd/global"
+	"AnimeLifeBackEnd/services"
 	jwt "github.com/appleboy/gin-jwt/v2"
 	"github.com/gin-gonic/gin"
 	"golang.org/x/crypto/bcrypt"
@@ -27,8 +28,10 @@ func InitJWTAuth() *jwt.GinJWTMiddleware {
 				return jwt.MapClaims{
 					jwtConfig.IdentityKey: v.ID,
 					"username":            v.Username,
+					"email":               v.Email,
 				}
 			}
+			global.Logger.Errorf("failed to get claims from data: %+v", data)
 			return jwt.MapClaims{}
 		},
 		Authenticator: func(c *gin.Context) (interface{}, error) {
@@ -36,22 +39,52 @@ func InitJWTAuth() *jwt.GinJWTMiddleware {
 			if err := c.ShouldBindJSON(&login); err != nil {
 				return "", jwt.ErrMissingLoginValues
 			}
-			userName := login.Username
-			password := login.Password
 
-			user := entity.User{
-				Model: gorm.Model{},
-			}
-			result := global.MysqlDB.Where("username = ?", userName).First(&user)
-			if result.Error != nil {
+			switch login.Type {
+			case request.UsernamePassword:
+				userName := login.Username
+				password := login.Password
+
+				user := entity.User{
+					Model: gorm.Model{},
+				}
+				result := global.MysqlDB.Where("username = ?", userName).First(&user)
+				if result.Error != nil {
+					return nil, jwt.ErrFailedAuthentication
+				}
+				err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password))
+				if err != nil {
+					return nil, jwt.ErrFailedAuthentication
+				}
+
+				return &user, nil
+			case request.EmailVerificationCode:
+				// 1. retrieve verification code and check expiration for the given email from redis
+				if verifyCode, ok := services.ServiceGroupApp.Auth.GetCode(login.Email); ok {
+					// 2. check expiration and compare with the given code
+					if verifyCode == login.Code {
+						// 3. if success, return user to jwt middleware to construct token
+						// The user is promised to be in the database once the verification code is generated
+						user := entity.User{
+							Model: gorm.Model{},
+						}
+						result := global.MysqlDB.Where("email = ?", login.Email).First(&user)
+						global.Logger.Debugf("user: %+v", user)
+						if result.Error != nil {
+							return nil, jwt.ErrFailedAuthentication
+						}
+						return &user, nil
+					} else {
+						// wrong Code
+						return nil, jwt.ErrFailedAuthentication
+					}
+				} else {
+					// no Code for the given email or expired
+					return nil, jwt.ErrFailedAuthentication
+				}
+			default:
 				return nil, jwt.ErrFailedAuthentication
 			}
-			err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password))
-			if err != nil {
-				return nil, jwt.ErrFailedAuthentication
-			}
-
-			return &user, nil
 		},
 		Unauthorized: func(c *gin.Context, code int, message string) {
 			c.JSON(code, gin.H{
