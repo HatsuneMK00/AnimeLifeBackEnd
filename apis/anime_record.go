@@ -32,6 +32,7 @@ func (a animeRecordApi) FetchAnimeRecords(c *gin.Context) {
 		c.JSON(400, gin.H{
 			"message": "fail to get user id from jwt token, or user id is not int",
 		})
+		global.Logger.Errorf("fail to get user id from jwt token, or user id is not int: %v", err)
 		return
 	}
 	offset, err := strconv.Atoi(c.DefaultQuery("offset", "0"))
@@ -39,6 +40,7 @@ func (a animeRecordApi) FetchAnimeRecords(c *gin.Context) {
 		c.JSON(400, gin.H{
 			"message": "offset needs to be uint",
 		})
+		global.Logger.Errorf("offset needs to be uint: %v", err)
 		return
 	}
 	animes, err := animeRecordService.FetchAnimeRecords(uint(userId), offset, 15)
@@ -46,6 +48,7 @@ func (a animeRecordApi) FetchAnimeRecords(c *gin.Context) {
 		c.JSON(500, gin.H{
 			"message": "db error",
 		})
+		global.Logger.Errorf("db error: %v", err)
 		return
 	}
 	c.JSON(200, gin.H{
@@ -62,6 +65,7 @@ func (a animeRecordApi) FetchAnimeRecordsOfRating(c *gin.Context) {
 		c.JSON(400, gin.H{
 			"message": "fail to get user id from jwt token, or user id is not int",
 		})
+		global.Logger.Errorf("fail to get user id from jwt token, or user id is not int: %v", err)
 		return
 	}
 	offset, err := strconv.Atoi(c.DefaultQuery("offset", "0"))
@@ -69,6 +73,7 @@ func (a animeRecordApi) FetchAnimeRecordsOfRating(c *gin.Context) {
 		c.JSON(400, gin.H{
 			"message": "offset needs to be uint",
 		})
+		global.Logger.Errorf("offset needs to be uint: %v", err)
 		return
 	}
 	rating, err := strconv.Atoi(c.Param("rating"))
@@ -76,6 +81,7 @@ func (a animeRecordApi) FetchAnimeRecordsOfRating(c *gin.Context) {
 		c.JSON(400, gin.H{
 			"message": "rating needs to be uint and between [-1, 4]",
 		})
+		global.Logger.Errorf("rating needs to be uint and between [-1, 4]: %v", err)
 		return
 	}
 	animes, err := animeRecordService.FetchAnimeRecordsOfRating(uint(userId), offset, 15, rating)
@@ -83,6 +89,7 @@ func (a animeRecordApi) FetchAnimeRecordsOfRating(c *gin.Context) {
 		c.JSON(500, gin.H{
 			"message": "db error",
 		})
+		global.Logger.Errorf("db error: %v", err)
 		return
 	}
 	c.JSON(200, gin.H{

@@ -28,8 +28,10 @@ func InitJWTAuth() *jwt.GinJWTMiddleware {
 				return jwt.MapClaims{
 					jwtConfig.IdentityKey: v.ID,
 					"username":            v.Username,
+					"email":               v.Email,
 				}
 			}
+			global.Logger.Errorf("failed to get claims from data: %+v", data)
 			return jwt.MapClaims{}
 		},
 		Authenticator: func(c *gin.Context) (interface{}, error) {
@@ -67,6 +69,7 @@ func InitJWTAuth() *jwt.GinJWTMiddleware {
 							Model: gorm.Model{},
 						}
 						result := global.MysqlDB.Where("email = ?", login.Email).First(&user)
+						global.Logger.Debugf("user: %+v", user)
 						if result.Error != nil {
 							return nil, jwt.ErrFailedAuthentication
 						}
