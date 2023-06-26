@@ -1,0 +1,8 @@
+.github/
+build/
+out/
+config_debug.yaml
+config_dummy.yaml
+.gitignore
+README.md
+docker/
