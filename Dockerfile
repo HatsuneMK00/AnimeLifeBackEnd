@@ -15,7 +15,6 @@ LABEL authors="makise"
 
 WORKDIR /app/AnimeLifeBackEnd
 COPY --from=builder /app/AnimeLifeBackEnd/backend ./
-COPY config_release.yaml ./
 
 EXPOSE 8080
 
