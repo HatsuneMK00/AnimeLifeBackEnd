@@ -19,7 +19,7 @@ func InitJWTAuth() *jwt.GinJWTMiddleware {
 	middleware, err := jwt.New(&jwt.GinJWTMiddleware{
 		Realm:       jwtConfig.Realm,
 		Key:         []byte(jwtConfig.SecretKey),
-		Timeout:     12 * time.Hour,
+		Timeout:     72 * time.Hour,
 		MaxRefresh:  4 * time.Hour,
 		IdentityKey: jwtConfig.IdentityKey,
 		SendCookie:  false,
