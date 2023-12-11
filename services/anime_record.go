@@ -291,8 +291,7 @@ func (s animeRecordService) SearchAnimeRecords(userId, offset, limit int, keywor
 	err := global.MysqlDB.Table("animes").
 		Joins("JOIN user_animes ON user_animes.anime_id = animes.id").
 		Where("user_animes.user_id = ?", userId).
-		Where("animes.name LIKE ?", "%"+keyword+"%").
-		Or("animes.name_jp LIKE ?", "%"+keyword+"%").
+		Where("animes.name LIKE ? OR animes.name_jp LIKE ?", "%"+keyword+"%", "%"+keyword+"%").
 		Select("animes.*, user_animes.comment, user_animes.rating AS rating, user_animes.watch_count AS watch_count, user_animes.created_at AS record_at, user_animes.updated_at AS modify_at").
 		Offset(offset).
 		Limit(limit).
