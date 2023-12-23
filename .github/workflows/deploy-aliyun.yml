@@ -1,7 +1,10 @@
 on:
   pull_request:
     branches:
-    - deploy
+      - main
+  push:
+    branches:
+      - main
   
 jobs:
   build-and-deploy:
