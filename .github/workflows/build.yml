@@ -12,7 +12,7 @@ on:
 permissions:
   contents: write
 env:
-  IMAGE_NAME: anime-life-backend
+  IMAGE_NAME: AnimeLifeBackend
 
 jobs:
   prepare-version:
