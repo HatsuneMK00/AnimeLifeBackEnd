@@ -24,8 +24,7 @@ jobs:
       - name: Prepare version
         id: prepare_version
         run: |
-          VERSION=$(echo "${{ github.ref }}" | sed -e 's,.*/\(.*\),\1,')
-          [ "$VERSION" == "master" ] && VERSION=latest || VERSION=0.1.0-${{ github.sha }}
+          VERSION=0.1.0-${{ github.sha }}
           [[ "${{ github.ref }}" == "refs/tags/"* ]] && VERSION=$(echo $VERSION | sed -e 's/^v//')
           echo VERSION=$VERSION
           echo "tag=$VERSION" >> "$GITHUB_OUTPUT"
@@ -78,7 +77,8 @@ jobs:
           ls ${{ github.workspace }}/helm-charts/charts/anime-life-backend
       - name: Update image tag
         run: |
-          sed -i "s/repository:.*/repository: ${{ env.IMAGE_ID }}/" ${{ github.workspace }}/helm-charts/charts/anime-life-backend/values.yaml
+          ENCODED_IMAGE_ID=$(echo ${{ env.IMAGE_ID }} | sed 's/\//\\\//g')
+          sed -i "s/repository:.*/repository: $ENCODED_IMAGE_ID/" ${{ github.workspace }}/helm-charts/charts/anime-life-backend/values.yaml
           sed -i "s/tag:.*/tag: ${{ env.IMAGE_TAG }}/" ${{ github.workspace }}/helm-charts/charts/anime-life-backend/values.yaml
           cat ${{ github.workspace }}/helm-charts/charts/anime-life-backend/values.yaml
       - name: Update chart version
