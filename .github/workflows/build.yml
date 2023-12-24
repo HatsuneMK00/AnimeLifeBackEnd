@@ -78,7 +78,7 @@ jobs:
           ls ${{ github.workspace }}/helm-charts/charts/anime-life-backend
       - name: Update image tag
         run: |
-          sed -i "s/repository:.*/repository: $IMAGE_ID/" ${{ github.workspace }}/helm-charts/charts/anime-life-backend/values.yaml
+          sed -i "s/repository:.*/repository: ${{ env.IMAGE_ID }}/" ${{ github.workspace }}/helm-charts/charts/anime-life-backend/values.yaml
           sed -i "s/tag:.*/tag: ${{ env.IMAGE_TAG }}/" ${{ github.workspace }}/helm-charts/charts/anime-life-backend/values.yaml
           cat ${{ github.workspace }}/helm-charts/charts/anime-life-backend/values.yaml
       - name: Update chart version
