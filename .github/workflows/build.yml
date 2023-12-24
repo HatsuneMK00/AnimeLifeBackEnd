@@ -11,8 +11,9 @@ on:
       - v*
 permissions:
   contents: write
+  package: write
 env:
-  IMAGE_NAME: AnimeLifeBackend
+  IMAGE_NAME: anime-life-backend
 
 jobs:
   prepare-version:
