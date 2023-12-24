@@ -1,3 +1,5 @@
+name: Build
+
 on:
   pull_request:
     branches:
@@ -5,8 +7,12 @@ on:
   push:
     branches:
       - master
+    tags:
+      - v*
 permissions:
   contents: write
+env:
+  IMAGE_NAME: anime-life-backend
 
 jobs:
   prepare-version:
@@ -17,66 +23,65 @@ jobs:
       - name: Prepare version
         id: prepare_version
         run: |
-          tag=0.0.1-${{ github.sha }}
-          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+          VERSION=$(echo "${{ github.ref }}" | sed -e 's,.*/\(.*\),\1,')
+          # [ "$VERSION" == "master" ] && VERSION=latest || VERSION=0.1.0-${{ github.sha }}
+          [[ "${{ github.ref }}" == "refs/tags/"* ]] && VERSION=$(echo $VERSION | sed -e 's/^v//')
+          [ "$VERSION" == "master" ] && VERSION=latest
+          echo VERSION=$VERSION
+          echo "tag=$VERSION" >> "$GITHUB_OUTPUT"
   docker-build:
     needs: [prepare-version]
     runs-on: ubuntu-latest
     env:
       IMAGE_TAG: ${{ needs.prepare-version.outputs.tag }}
     steps:
-      -
-        name: Checkout
+      - name: Checkout
         uses: actions/checkout@v4
-      -
-        name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
-      -
-        name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-      -
-        name: Login to Docker Hub
-        uses: docker/login-action@v3
-        with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
-      -
-        name: Build and push
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          push: true
-          tags: kmakise556/anime-life-backend:${{ env.IMAGE_TAG }}
-  deploy-helm:
-    runs-on: ubuntu-latest
-    needs: [ prepare-version, docker-build ]
-    if: github.ref == 'refs/heads/master'
-    env:
-      IMAGE_TAG: ${{ needs.prepare-version.outputs.tag }}
-    steps:
-      - name: Checkout helm-charts repo
-        uses: actions/checkout@v4
-        with:
-          repository: HatsuneMK00/helm-charts
-          path: helm-charts
-          token: ${{ secrets.GH_TOKEN }}
-      - name: debug
+
+      - name: Build image
+        run: docker build . --file Dockerfile --tag $IMAGE_NAME --label "runnumber=${GITHUB_RUN_ID}"
+
+      - name: Log in to registry
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u $ --password-stdin
+
+      - name: Push image
         run: |
-          pwd
-          ls ${{ github.workspace }}/helm-charts
-          ls ${{ github.workspace }}/helm-charts/charts
-          ls ${{ github.workspace }}/helm-charts/charts/anime-life-backend
-      - name: Update image tag
-        run: |
-          sed -i "s/tag:.*/tag: ${{ env.IMAGE_TAG }}/" ${{ github.workspace }}/helm-charts/charts/anime-life-backend/values.yaml
-      - name: Update chart version
-        run: |
-          sed -i "s/version:.*/version: ${{ env.IMAGE_TAG }}/" ${{ github.workspace }}/helm-charts/charts/anime-life-backend/Chart.yaml
-      - name: Commit and push changes to HatsuneMK00/helm-charts
-        run: |
-          cd ${{ github.workspace }}/helm-charts
-          git config user.name "$GITHUB_ACTOR"
-          git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
-          git add .
-          git commit -m "Update anime-life-backend to ${{ env.IMAGE_TAG }}"
-          git push
+          IMAGE_ID=ghcr.io/${{ github.repository_owner }}/$IMAGE_NAME
+          IMAGE_ID=$(echo $IMAGE_ID | tr '[A-Z]' '[a-z]')
+          echo IMAGE_ID=$IMAGE_ID
+          echo IMAGE_TAG=$IMAGE_TAG
+          docker tag $IMAGE_NAME $IMAGE_ID:$IMAGE_TAG
+          docker push $IMAGE_ID:$IMAGE_TAG
+#  deploy-helm:
+#    runs-on: ubuntu-latest
+#    needs: [ prepare-version, docker-build ]
+#    if: github.ref == 'refs/heads/master'
+#    env:
+#      IMAGE_TAG: ${{ needs.prepare-version.outputs.tag }}
+#    steps:
+#      - name: Checkout helm-charts repo
+#        uses: actions/checkout@v4
+#        with:
+#          repository: HatsuneMK00/helm-charts
+#          path: helm-charts
+#          token: ${{ secrets.GH_TOKEN }}
+#      - name: debug
+#        run: |
+#          pwd
+#          ls ${{ github.workspace }}/helm-charts
+#          ls ${{ github.workspace }}/helm-charts/charts
+#          ls ${{ github.workspace }}/helm-charts/charts/anime-life-backend
+#      - name: Update image tag
+#        run: |
+#          sed -i "s/tag:.*/tag: ${{ env.IMAGE_TAG }}/" ${{ github.workspace }}/helm-charts/charts/anime-life-backend/values.yaml
+#      - name: Update chart version
+#        run: |
+#          sed -i "s/version:.*/version: ${{ env.IMAGE_TAG }}/" ${{ github.workspace }}/helm-charts/charts/anime-life-backend/Chart.yaml
+#      - name: Commit and push changes to HatsuneMK00/helm-charts
+#        run: |
+#          cd ${{ github.workspace }}/helm-charts
+#          git config user.name "$GITHUB_ACTOR"
+#          git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
+#          git add .
+#          git commit -m "Update anime-life-backend to ${{ env.IMAGE_TAG }}"
+#          git push
