@@ -87,7 +87,7 @@ jobs:
           echo "current chart version: $version"
           new_version=$(${{ github.workspace }}/.github/scripts/incre_semver.sh $version patch)
           echo "new chart version: $new_version"
-          CHART_VERSION=$version-${{ github.sha }}
+          CHART_VERSION=$(echo $version | cut -d '-' -f1)-${{ github.sha }}
           [[ "${{ github.ref }}" == "refs/head/master" ]] && CHART_VERSION=$new_version
           sed -i "s/version:.*/version: $CHART_VERSION/" ${{ github.workspace }}/helm-charts/charts/anime-life-backend/Chart.yaml
           echo "chart_version=$CHART_VERSION" >> "$GITHUB_OUTPUT"
