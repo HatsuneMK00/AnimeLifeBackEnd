@@ -81,6 +81,7 @@ jobs:
         with:
           cmd: yq '.version' helm-charts/charts/anime-life-backend/Chart.yaml
       - name: Update chart version
+        id: update_chart_version
         run: |
           version=${{ steps.read_chart_version.outputs.result }}
           echo "current chart version: $version"
@@ -89,11 +90,12 @@ jobs:
           CHART_VERSION=$version-${{ github.sha }}
           [[ "${{ github.ref }}" == "refs/head/master" ]] && CHART_VERSION=$new_version
           sed -i "s/version:.*/version: $CHART_VERSION/" ${{ github.workspace }}/helm-charts/charts/anime-life-backend/Chart.yaml
+          echo "chart_version=$CHART_VERSION" >> "$GITHUB_OUTPUT"
       - name: Commit and push changes to HatsuneMK00/helm-charts
         run: |
           cd ${{ github.workspace }}/helm-charts
           git config user.name "$GITHUB_ACTOR"
           git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
           git add .
-          git commit -m "Update anime-life-backend to ${{ env.IMAGE_TAG }}"
+          git commit -m "Update anime-life-backend to ${{ steps.update_chart_version.outputs.chart_version }}"
           git push
