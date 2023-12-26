@@ -82,7 +82,7 @@ jobs:
         run: |
           version=${{ steps.read_chart_version.outputs.result }}
           echo "current chart version: $version"
-          new_version=$(.github/scripts/incre_semver.sh $version patch)
+          new_version=$(${{ github.workspace }}/.github/scripts/incre_semver.sh $version patch)
           echo "new chart version: $new_version"
           CHART_VERSION=$version-${{ github.sha }}
           [[ "${{ github.ref }}" == "refs/head/master" ]] && CHART_VERSION=$new_version
