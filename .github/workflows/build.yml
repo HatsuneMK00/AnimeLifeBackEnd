@@ -61,6 +61,8 @@ jobs:
       IMAGE_ID: ${{ needs.docker-build.outputs.image_id }}
       IMAGE_TAG: ${{ needs.prepare-version.outputs.tag }}
     steps:
+      - name: Checkout
+        uses: actions/checkout@v4
       - name: Checkout helm-charts repo
         uses: actions/checkout@v4
         with:
