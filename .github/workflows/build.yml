@@ -101,4 +101,4 @@ jobs:
           git push
       - name: Summary
         run: |
-          echo "Helm Chart Version: ${{ steps.update_chart_version.outputs.chart_version }} >> $GITHUB_STEP_SUMMARY
+          echo "Helm Chart Version: ${{ steps.update_chart_version.outputs.chart_version }}" >> $GITHUB_STEP_SUMMARY
