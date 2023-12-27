@@ -325,12 +325,43 @@ func (a animeRecordApi) DeleteAnimeRecord(c *gin.Context) {
 }
 
 func getUserIdFromJwtToken(c *gin.Context) (int, error) {
-	claims := jwt.ExtractClaims(c)
-	userId := claims[global.Config.Jwt.IdentityKey]
-	if userId, ok := userId.(float64); ok {
-		return int(userId), nil
-	} else {
-		err := errors.New("user id is not int")
-		return 0, err
+	payload, exists := c.Get("JWT_PAYLOAD")
+	// Use JWT Auth if no jwt payload exists
+	if !exists {
+		claims := jwt.ExtractClaims(c)
+		userId := claims[global.Config.Jwt.IdentityKey]
+		if userId, ok := userId.(float64); ok {
+			return int(userId), nil
+		} else {
+			err := errors.New("user id is not int")
+			return 0, err
+		}
+	}
+
+	switch p := payload.(type) {
+	// Use JWT Auth
+	case jwt.MapClaims:
+		claims := jwt.ExtractClaims(c)
+		userId := claims[global.Config.Jwt.IdentityKey]
+		if userId, ok := userId.(float64); ok {
+			return int(userId), nil
+		} else {
+			err := errors.New("user id is not int")
+			return 0, err
+		}
+	// Use Clerk provided JWT Auth
+	case map[string]interface{}:
+		clerkId := p["id"]
+		if clerkId, ok := clerkId.(string); ok {
+			user, okk := userService.FindUserByClerkId(clerkId)
+			if okk {
+				global.Logger.Debugf("Clerk id: %s", user.ClerkId)
+				global.Logger.Debugf("Clerk user id: %d", user.ID)
+				return int(user.ID), nil
+			}
+		}
+		return 0, errors.New("no user found")
+	default:
+		return 0, errors.New("no jwt payload found")
 	}
 }

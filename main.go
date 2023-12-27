@@ -7,7 +7,9 @@ import (
 	"AnimeLifeBackEnd/middlewares"
 	"AnimeLifeBackEnd/routes"
 	"AnimeLifeBackEnd/websocket"
+	"github.com/clerkinc/clerk-sdk-go/clerk"
 	"github.com/gin-gonic/gin"
+	"os"
 )
 
 func main() {
@@ -36,6 +38,14 @@ func main() {
 	// Init Redis
 	global.RedisDB = core.InitRedisDB()
 
+	// Init Clerk Client
+	apiKey := os.Getenv("CLERK_API_KEY")
+	client, err := clerk.NewClient(apiKey)
+	if err != nil {
+		global.Logger.Errorf("failed to init clerk client: %v", err)
+	}
+
+	// Init JWT Auth
 	authJWT := middlewares.InitJWTAuth()
 	global.WsHub = websocket.NewHub()
 	go global.WsHub.Run()
@@ -53,6 +63,12 @@ func main() {
 	privateGroup.Use(authJWT.MiddlewareFunc())
 	{
 		apiEndpointGroup.AddApiRoutes(privateGroup, publicGroup)
+	}
+	clerkPrivateGroup := router.Group("/v2")
+	clerkPublicGroup := router.Group("/v2")
+	clerkPrivateGroup.Use(middlewares.NewClerkAuth(client))
+	{
+		apiEndpointGroup.AddApiRoutes(clerkPrivateGroup, clerkPublicGroup)
 	}
 
 	router.Run(":8080")

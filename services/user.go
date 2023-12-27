@@ -12,6 +12,7 @@ type UserService interface {
 	FindUserByEmail(email string) (*entity.User, bool)
 	FindUsersWithOffset(offset int) ([]entity.User, bool)
 	AddUser(user *entity.User) (*entity.User, int64)
+	FindUserByClerkId(id string) (*entity.User, bool)
 }
 
 type userService struct{}
@@ -66,6 +67,20 @@ func (s userService) FindUserByEmail(email string) (*entity.User, bool) {
 		Model: gorm.Model{},
 	}
 	result := global.MysqlDB.Where("email = ?", email).First(&user)
+	ok := true
+	if result.Error != nil {
+		global.Logger.Errorf("%v", result.Error)
+		ok = false
+	}
+	user.Password = ""
+	return &user, ok
+}
+
+func (s userService) FindUserByClerkId(id string) (*entity.User, bool) {
+	user := entity.User{
+		Model: gorm.Model{},
+	}
+	result := global.MysqlDB.Where("clerk_id = ?", id).First(&user)
 	ok := true
 	if result.Error != nil {
 		global.Logger.Errorf("%v", result.Error)
