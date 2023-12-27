@@ -12,7 +12,7 @@ permissions:
   packages: write
 env:
   IMAGE_NAME: anime-life-backend
-  IMAGE_TAG: 0.2.1
+  IMAGE_TAG: 0.2.2
   COPY_TO_ACR: true
 jobs:
   prepare-version:
