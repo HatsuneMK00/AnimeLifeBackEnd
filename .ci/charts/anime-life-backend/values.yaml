@@ -1,0 +1,3 @@
+image:
+  repository: registry.cn-shanghai.aliyuncs.com/animelife/anime-life-backend
+  tag: 0.2.2-fddae119f47409becf8134fa8c4528ab7b5cbb2c

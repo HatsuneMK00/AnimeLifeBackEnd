@@ -1,0 +1,16 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: anime-life-backend
+spec:
+  rules:
+  - host: "api.makise-amadeus.xyz"
+    http:
+      paths:
+      - pathType: Prefix
+        path: "/"
+        backend:
+          service:
+            name: anime-life-backend
+            port:
+              number: 8080
