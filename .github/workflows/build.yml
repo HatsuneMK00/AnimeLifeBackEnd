@@ -142,7 +142,7 @@ jobs:
           helm upgrade --wait --timeout 5m --namespace default anime-life-backend .ci/charts/anime-life-backend
       - name: Commit and push changes to HatsuneMK00/helm-charts
         run: |
-          cp -r .ci/charts/anime-life-backend helm-charts/charts/anime-life-backend
+          cp -r .ci/charts/anime-life-backend helm-charts/charts
           cd helm-charts
           git config user.name "$GITHUB_ACTOR"
           git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
