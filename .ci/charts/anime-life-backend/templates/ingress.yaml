@@ -2,6 +2,9 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: anime-life-backend
+  annotations:
+    traefik.ingress.kubernetes.io/router.entrypoints: websecure
+    traefik.ingress.kubernetes.io/router.tls: "true"
 spec:
   rules:
   - host: "api.makise-amadeus.xyz"
@@ -14,3 +17,5 @@ spec:
             name: anime-life-backend
             port:
               number: 8080
+  tls:
+  - secretName: tls-certificate
