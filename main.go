@@ -43,11 +43,13 @@ func main() {
 	apiEndpointGroup := routes.RouterGroupApp.RouterGroup
 	authEndpoints := routes.RouterGroupApp.AuthRouter
 	websocketEndpoints := routes.RouterGroupApp.WebsocketRouter
+	metricsEndpoints := routes.RouterGroupApp.MetricsRouter
 	// 注册所有不需要认证的endpoint
 	publicGroup := router.Group("")
 	{
 		authEndpoints.AddAuthRoutes(publicGroup, authJWT)
 		websocketEndpoints.AddWebsocketRoutes(publicGroup)
+		metricsEndpoints.AddMetricsRoutes(publicGroup)
 	}
 	privateGroup := router.Group("")
 	privateGroup.Use(authJWT.MiddlewareFunc())

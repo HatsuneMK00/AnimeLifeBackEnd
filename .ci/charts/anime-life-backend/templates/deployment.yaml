@@ -17,29 +17,49 @@ spec:
         app: anime-life-backend
     spec:
       containers:
-      - name: anime-life-backend
-        image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
-        ports:
-        - containerPort: 8080
-        resources:
-          requests:
-            cpu: "100m"
-            memory: "100Mi"
-          limits:
-            cpu: "500m"
-            memory: "500Mi"
-        env:
-          - name: CLERK_API_KEY
-            valueFrom:
-              secretKeyRef:
-                name: clerk-api-key
-                key: apikey
-          - name: CONFIG_FILE
-            value: runtime-config/config_release.yaml
-        volumeMounts:
-        - name: config-release
-          mountPath: /app/AnimeLifeBackEnd/runtime-config
+        - name: anime-life-backend
+          image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
+          ports:
+            - containerPort: 8080
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "100Mi"
+            limits:
+              cpu: "500m"
+              memory: "500Mi"
+          env:
+            - name: CLERK_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: clerk-api-key
+                  key: apikey
+            - name: CONFIG_FILE
+              value: runtime-config/config_release.yaml
+          volumeMounts:
+            - name: config-release
+              mountPath: /app/AnimeLifeBackEnd/runtime-config
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 8080
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: 8080
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          startupProbe:
+            httpGet:
+              path: /healthz
+              port: 8080
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            failureThreshold: 10
       volumes:
-      - name: config-release
-        secret:
-          secretName: config-release
+        - name: config-release
+          secret:
+            secretName: config-release
