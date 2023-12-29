@@ -1,0 +1,19 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: anime-life-backend-http
+  annotations:
+    traefik.ingress.kubernetes.io/router.entrypoints: web
+    traefik.ingress.kubernetes.io/router.middlewares: default-httpsredirect@kubernetescrd
+spec:
+  rules:
+    - host: "api.makise-amadeus.xyz"
+      http:
+        paths:
+          - pathType: Prefix
+            path: "/"
+            backend:
+              service:
+                name: anime-life-backend
+                port:
+                  number: 8080
