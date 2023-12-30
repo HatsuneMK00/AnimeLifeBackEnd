@@ -18,4 +18,4 @@ spec:
             port:
               number: 8080
   tls:
-  - secretName: tls-certificate
+  - secretName: tls-certificate-api
